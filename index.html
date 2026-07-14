@@ -521,7 +521,7 @@
     <!-- 頁尾 -->
     <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-4 border-t border-[#4E4944] mt-auto hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>虎航促銷機票預測與觀測系統 · v4.6</p>
+            <p>虎航促銷預測系統 · v5.2</p>
         </div>
     </footer>
 
@@ -585,38 +585,6 @@
             "tohoku": { name: "東北地區", airports: ["KIJ", "SDJ", "FKS", "AXT", "HNA"] },
             "hokkaido": { name: "北海道", airports: ["HKD", "CTS"] }
         };
-
-        // 官方最新實時直飛航班排班資訊 (21 條直飛日本航線)
-        const defaultSchedules = [
-            // 沖繩地區
-            { route: "TPE-OKA", days: [1, 2, 3, 4, 5, 6, 0] }, // 沖繩每日飛航
-            { route: "TPE-ISG", days: [1, 2, 3, 4, 5, 6, 0] }, // 石垣島每日飛航
-            // 九州地區
-            { route: "TPE-HSG", days: [1, 4, 6] },             // 佐賀週一、週四、週六
-            { route: "TPE-FUK", days: [1, 2, 3, 4, 5, 6, 0] }, // 福岡每日飛航
-            { route: "TPE-KMI", days: [3, 6] },                // 宮崎週三、週六
-            { route: "TPE-OIT", days: [2, 5] },                // 大分週二、週五
-            // 關西四國地區
-            { route: "TPE-KIX", days: [1, 2, 3, 4, 5, 6, 0] }, // 大阪關西每日飛航
-            { route: "TPE-KCZ", days: [3, 6] },                // 高知週三、週六
-            { route: "TPE-OKJ", days: [1, 2, 3, 4, 5, 6, 0] }, // 岡山每日飛航
-            { route: "TPE-YGJ", days: [1, 5] },                // 鳥取米子週一、週五
-            // 關東地區
-            { route: "TPE-NRT", days: [1, 2, 3, 4, 5, 6, 0] }, // 東京成田每日飛航
-            { route: "TPE-HND", days: [1, 2, 3, 4, 5, 6, 0] }, // 東京羽田每日飛航
-            // 中部地區
-            { route: "TPE-NGO", days: [1, 2, 3, 4, 5, 6, 0] }, // 名古屋每日飛航
-            { route: "TPE-KMQ", days: [4, 0] },                // 小松週四、週日
-            // 東北地區
-            { route: "TPE-KIJ", days: [1, 5] },                // 新潟週一、週五
-            { route: "TPE-SDJ", days: [2, 4, 0] },             // 仙台週二、週四、週日
-            { route: "TPE-FKS", days: [2, 5] },                // 福島週二、週五
-            { route: "TPE-AXT", days: [4, 0] },                // 秋田週四、週日
-            { route: "TPE-HNA", days: [3, 6] },                // 花卷週三、週六
-            // 北海道
-            { route: "TPE-HKD", days: [1, 2, 3, 4, 5, 6, 0] }, // 函館每日飛航
-            { route: "TPE-CTS", days: [1, 2, 3, 4, 5, 6, 0] }  // 札幌每日飛航
-        ];
 
         // --- 輔助函式：取得航點中文名稱與格式化 ---
         function getAirportName(code) {
@@ -688,7 +656,7 @@
             activeConfirmCallback = onConfirm;
         }
 
-        // --- STREAMING_CHUNK: 系統初始化與事件監聽綁定 ---
+        // --- STREAMING_CHUNK: 系統事件監聽綁定 ---
         document.addEventListener('DOMContentLoaded', function() {
             bindClick('nav-dashboard', () => switchTab('dashboard'));
             bindClick('nav-records', () => switchTab('records'));
@@ -739,6 +707,7 @@
             document.getElementById('schedules-list-container').addEventListener('click', function(e) {
                 const deleteBtn = e.target.closest('[data-delete-schedule]');
                 const editBtn = e.target.closest('[data-edit-schedule]');
+                const createBtn = e.target.closest('[data-create-schedule]');
                 
                 if (deleteBtn) {
                     const route = deleteBtn.getAttribute('data-delete-schedule');
@@ -746,6 +715,9 @@
                 } else if (editBtn) {
                     const route = editBtn.getAttribute('data-edit-schedule');
                     startEditSchedule(route);
+                } else if (createBtn) {
+                    const code = createBtn.getAttribute('data-create-schedule');
+                    startCreateScheduleForAirport(code);
                 }
             });
 
@@ -783,7 +755,7 @@
             if (el) el.addEventListener('submit', callback);
         }
 
-        // --- STREAMING_CHUNK: 本地/雲端資料同步與 22 條航班時間表載入 ---
+        // --- STREAMING_CHUNK: 雲端/本機資料同步，不含任何強制重置覆蓋之硬編碼班表 ---
         async function loadStoredData() {
             const customZh = localStorage.getItem('tiger_airport_zh_v6');
             if (customZh) {
@@ -802,12 +774,6 @@
                         if (cloud.airportZh) {
                             airportZh = { ...airportZh, ...cloud.airportZh };
                         }
-                        
-                        // 若雲端班表不完整，強制重置並補滿為官方 22 條直航
-                        if (schedules.length !== 22) {
-                            schedules = [...defaultSchedules];
-                            await syncData();
-                        }
                         saveToLocalCache();
                         return;
                     }
@@ -820,12 +786,6 @@
             records = JSON.parse(localStorage.getItem('tiger_records_v6') || '[]');
             schedules = JSON.parse(localStorage.getItem('tiger_schedules_v6') || '[]');
             nogoDays = JSON.parse(localStorage.getItem('tiger_nogo_days_v6') || '[]');
-            
-            // 強制防呆：若本機班表不是 22 條直航，自動補滿預設官方班次
-            if (schedules.length !== 22) {
-                schedules = [...defaultSchedules];
-                saveToLocalCache();
-            }
         }
 
         function saveToLocalCache() {
@@ -1020,7 +980,7 @@
             return Array.from(dests);
         }
 
-        // --- STREAMING_CHUNK: 建立扁平且中文化地區分類下拉選單 (無 optgroup, 直接取代並可選) ---
+        // --- STREAMING_CHUNK: 建立中文化地區分類下拉選單 ---
         function populateRouteDropdowns() {
             const calendarRouteSelect = document.getElementById('calendar-route-select');
             if (!calendarRouteSelect) return;
@@ -1034,11 +994,10 @@
             allOption.textContent = "全部地區與航點 - 一鍵查看所有機場";
             calendarRouteSelect.appendChild(allOption);
 
-            // 2. 依照 image_7bec27.png 官方分類進行扁平式渲染
+            // 2. 依照官方地區分類進行扁平式渲染
             const definedAirports = new Set();
             for (const [key, region] of Object.entries(regions)) {
                 
-                // 區域一鍵選取標題：直接取代原先的 optgroup label，可以點擊
                 const regionOption = document.createElement('option');
                 regionOption.value = `region_${key}`;
                 regionOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
@@ -1099,7 +1058,6 @@
             return sched ? sched.days.includes(weekday) : true;
         }
 
-        // --- STREAMING_CHUNK: 動態運算地區或全航線營運星期交集... ---
         function getSelectedRouteDays() {
             const routeSelect = document.getElementById('calendar-route-select');
             const selectedValue = routeSelect ? (routeSelect.value || "all") : "all";
@@ -1112,7 +1070,6 @@
             if (selectedValue.startsWith('region_')) {
                 const regionId = selectedValue.replace('region_', '');
                 if (regionId === 'others') {
-                    // 收集其他分類的所有航點
                     const defined = new Set();
                     for (const r of Object.values(regions)) {
                         r.airports.forEach(a => defined.add(a));
@@ -1186,7 +1143,7 @@
                    r.return_from === selectedValue;
         }
 
-        // --- STREAMING_CHUNK: 雙月份並列月曆渲染與星期精準校準邏輯 ---
+        // --- STREAMING_CHUNK: 雙月份並列月曆渲染 ---
         function renderDualCalendars() {
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
             
@@ -1345,7 +1302,7 @@
             return wrapper;
         }
 
-        // --- STREAMING_CHUNK: 月曆單格點擊詳情與無法出國設定 ---
+        // --- STREAMING_CHUNK: 月曆單格點擊詳情 ---
         function handleCalendarCellClick(dateString, isFlightDay, dayNum) {
             const filterType = document.getElementById('calendar-type-select').value;
             const targetYear = new Date(dateString).getFullYear();
@@ -1805,6 +1762,26 @@
             document.getElementById('schedule-form').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // 一鍵幫尚未設定營運星期的航點帶入預設新增設定
+        function startCreateScheduleForAirport(airportCode) {
+            editingRoute = null;
+            resetScheduleForm();
+
+            const route = `TPE-${airportCode}`;
+            document.getElementById('sched-route').value = route;
+            document.getElementById('sched-from-zh').value = "台北桃園";
+            document.getElementById('sched-to-zh').value = airportZh[airportCode] || "";
+
+            document.querySelectorAll('input[name="sched_days"]').forEach(cb => {
+                cb.checked = false; // 清空星期讓使用者勾選
+            });
+
+            document.getElementById('btn-submit-schedule').innerHTML = '<i class="fa-solid fa-plus-circle mr-1"></i> 設定 / 啟用';
+            document.getElementById('btn-cancel-edit-sched').classList.remove('hidden');
+            
+            document.getElementById('schedule-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
         function cancelEditSchedule() {
             editingRoute = null;
             resetScheduleForm();
@@ -1819,36 +1796,24 @@
         }
 
         async function deleteSchedule(route) {
-            showConfirm("刪除航班班表", `確定要刪除 ${route} 的班表設定嗎？（刪除後將無法預估該航線之正確營運日）`, async () => {
+            showConfirm("刪除航班班表", `確定要將 ${route} 的班表設定從雲端與本地清除嗎？（清除後此航點將會回到待設定之未啟用狀態）`, async () => {
                 schedules = schedules.filter(s => s.route !== route);
                 await syncData();
                 populateRouteDropdowns();
                 updateDashboard();
                 renderSchedulesList();
-                showToast("班表設定已刪除。");
+                showToast("班表設定已清除。");
             });
         }
 
-        // --- STREAMING_CHUNK: 按官方地區分類渲染排班設定卡片，加入編輯/刪除按鈕 ---
+        // --- STREAMING_CHUNK: 按官方地區分類動態渲染排班卡片，包含預設未設定班表的卡片佔位 ---
         function renderSchedulesList() {
             const container = document.getElementById('schedules-list-container');
             container.innerHTML = "";
 
-            if (schedules.length === 0) {
-                container.innerHTML = `<div class="text-center text-[#9E968E] text-xs py-8">目前無任何排班資料。</div>`;
-                return;
-            }
-
-            // 建立各分類分組渲染邏輯
+            // 1. 先為 7 大官方分類進行排程分組渲染
             for (const [regKey, region] of Object.entries(regions)) {
                 
-                // 找出屬於該地區的所有班次卡片
-                const matchedSchedules = schedules.filter(s => {
-                    const dest = getDestinationFromRoute(s.route);
-                    return region.airports.includes(dest);
-                });
-
-                // 即使該地區目前無任何班次，也預先建立其標題區塊，滿足「包含未新增班表的航點名稱也預先設定」
                 const groupWrapper = document.createElement('div');
                 groupWrapper.className = "space-y-2";
 
@@ -1860,20 +1825,23 @@
                 const cardsGrid = document.createElement('div');
                 cardsGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
 
-                if (matchedSchedules.length === 0) {
-                    const emptyPlaceholder = document.createElement('div');
-                    emptyPlaceholder.className = "col-span-full text-center text-[#9E968E]/60 text-[10px] py-4 bg-[#FFFDF9] border border-dashed border-[#EFE9DB] rounded-lg";
-                    emptyPlaceholder.textContent = "目前此地區無營運航班班表，請於上方新增。";
-                    cardsGrid.appendChild(emptyPlaceholder);
-                } else {
-                    matchedSchedules.forEach(s => {
-                        const card = document.createElement('div');
+                // 動態遍歷該地區所有的官方設定航點
+                region.airports.forEach(airportCode => {
+                    const matchedSched = schedules.find(s => {
+                        const dest = getDestinationFromRoute(s.route);
+                        return dest === airportCode;
+                    });
+
+                    const card = document.createElement('div');
+                    
+                    if (matchedSched) {
+                        // 已經在 Firebase/本地 設定並儲存了班表
                         card.className = "bg-[#FFFDF9] border border-[#EFE9DB] rounded-lg p-3 flex items-center justify-between shadow-xs text-xs morandi-shadow";
 
                         let daysHtml = "";
                         const order = [1, 2, 3, 4, 5, 6, 0];
                         order.forEach(dayIndex => {
-                            const isActive = s.days.includes(dayIndex);
+                            const isActive = matchedSched.days.includes(dayIndex);
                             daysHtml += `<span class="w-5 h-5 inline-flex items-center justify-center text-[9px] font-bold rounded ${
                                 isActive ? 'bg-[#3E3A36] text-white' : 'bg-[#EFE9DB] text-[#9E968E]'
                             }">${weekDaysChinese[dayIndex]}</span>`;
@@ -1882,31 +1850,46 @@
                         card.innerHTML = `
                             <div class="space-y-1.5 flex-grow pr-2">
                                 <div class="font-bold text-[#3E3A36] flex items-center gap-1.5 flex-wrap">
-                                    <i class="fa-solid fa-plane text-[#9E968E] text-[10px]"></i> 
-                                    <span>${getRouteDisplayName(s.route)} (${s.route})</span>
+                                    <i class="fa-solid fa-plane text-[#EAA122] text-[10px]"></i> 
+                                    <span>${getAirportName(airportCode)} (${matchedSched.route})</span>
                                 </div>
                                 <div class="flex gap-1">
                                     ${daysHtml}
                                 </div>
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button data-edit-schedule="${s.route}" class="text-[#9E968E] hover:text-[#EAA122] p-1.5 rounded transition duration-200" title="編輯班表與名稱">
+                                <button data-edit-schedule="${matchedSched.route}" class="text-[#9E968E] hover:text-[#EAA122] p-1.5 rounded transition duration-200" title="編輯班表與名稱">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-                                <button data-delete-schedule="${s.route}" class="text-[#9E968E] hover:text-[#C07A7A] p-1.5 rounded transition duration-200" title="刪除">
+                                <button data-delete-schedule="${matchedSched.route}" class="text-[#9E968E] hover:text-[#C07A7A] p-1.5 rounded transition duration-200" title="刪除班表並回到未啟用">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         `;
-                        cardsGrid.appendChild(card);
-                    });
-                }
+                    } else {
+                        // 尚未設定班表，以低飽和灰階優雅呈現 "未啟用" 狀態
+                        card.className = "bg-[#FFFDF9]/60 border border-[#EFE9DB]/50 border-dashed rounded-lg p-3 flex items-center justify-between text-xs";
+                        card.innerHTML = `
+                            <div class="space-y-1">
+                                <div class="font-bold text-[#9E968E] flex items-center gap-1.5 flex-wrap">
+                                    <i class="fa-solid fa-plane-slash text-[#9E968E]/50 text-[10px]"></i> 
+                                    <span>${getAirportName(airportCode)} (${airportCode})</span>
+                                </div>
+                                <div class="text-[10px] text-[#9E968E] italic">未啟用 (暫停飛航或未設定)</div>
+                            </div>
+                            <button data-create-schedule="${airportCode}" class="bg-[#3E3A36] hover:bg-[#EAA122] hover:text-[#3E3A36] text-white font-bold px-2 py-1.5 rounded transition duration-200 text-[10px] flex items-center gap-1 shrink-0">
+                                <i class="fa-solid fa-plus-circle"></i> 設定 / 啟用
+                            </button>
+                        `;
+                    }
+                    cardsGrid.appendChild(card);
+                });
 
                 groupWrapper.appendChild(cardsGrid);
                 container.appendChild(groupWrapper);
             }
 
-            // 處理不屬於任何七大分類的自定義航線
+            // 2. 處理不屬於任何七大分類但使用者手動自定義的其他航點
             const definedAirports = new Set();
             for (const r of Object.values(regions)) {
                 r.airports.forEach(a => definedAirports.add(a));
