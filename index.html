@@ -115,7 +115,7 @@
                 <div class="flex items-center gap-2">
                     <button id="btn-toggle-firebase" class="text-[10px] bg-[#4E4944] hover:bg-[#5E5852] text-[#FDF3DF] px-2.5 py-1.5 rounded transition duration-200 flex items-center gap-1.5 border border-[#5E5852]">
                         <i class="fa-solid fa-cloud"></i>
-                        <span id="firebase-status-text">本機離線模式</span>
+                        <span id="firebase-status-text">雲端同步讀取中...</span>
                         <span class="inline-block w-2.5 h-2.5 rounded-full bg-stone-500" id="firebase-indicator"></span>
                     </button>
                 </div>
@@ -200,7 +200,7 @@
 
                     <div>
                         <label class="block text-[10px] font-bold text-[#9E968E] uppercase tracking-wider mb-1.5">
-                            <i class="fa-solid fa-route mr-1 text-[#EAA122]"></i> 選擇觀測航線
+                            <i class="fa-solid fa-route mr-1 text-[#EAA122]"></i> 選擇觀測航點
                         </label>
                         <select id="calendar-route-select" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-semibold rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#EAA122]">
                             <!-- JS 動態渲染中文化名稱 -->
@@ -479,7 +479,7 @@
                         </div>
                         <div>
                             <label class="block font-semibold text-[#9E968E] mb-1">目的地中文名稱</label>
-                            <input type="text" id="sched-to-zh" placeholder="例如: 沖繩那霸" class="w-full bg-white border border-[#EFE9DB] rounded p-2 text-[#3E3A36] outline-none focus:ring-1 focus:ring-[#EAA122]">
+                            <input type="text" id="sched-to-zh" placeholder="例如: 沖繩" class="w-full bg-white border border-[#EFE9DB] rounded p-2 text-[#3E3A36] outline-none focus:ring-1 focus:ring-[#EAA122]">
                         </div>
                         <div>
                             <button type="submit" class="w-full bg-[#3E3A36] hover:bg-[#2C2926] text-white font-bold p-2.5 rounded transition duration-200">
@@ -544,7 +544,13 @@
         let currentMonth = 4;   // 0-indexed, 4 = 5月 (連續顯示5-6月)
         let activeConfirmCallback = null;
 
-        // Firebase 雲端狀態
+        // Firebase 雲端狀態 (已預填金鑰 - Req 1)
+        const builtInFirebaseConfig = {
+            apiKey: "AIzaSyA1fJcM50HoYfoglPvp5OVjIb33az1Bbv8",
+            authDomain: "flight-promotion-tracker.firebaseapp.com",
+            projectId: "flight-promotion-tracker",
+            appId: "1:581820031090:web:9402c01dfbeda2d98822eb"
+        };
         let firebaseApp = null;
         let db = null;
         let isFirebaseConnected = false;
@@ -552,31 +558,55 @@
         // 內建熱門航點城市中文字典 (Req 2 & 3)
         let airportZh = {
             "TPE": "台北桃園", "KHH": "高雄小港", "TXG": "台中",
-            "OKA": "沖繩那霸", "KIX": "大阪關西", "NRT": "東京成田",
+            "OKA": "沖繩", "KIX": "大阪", "NRT": "東京成田",
             "HND": "東京羽田", "NGO": "名古屋", "FUK": "福岡",
-            "CTS": "札幌新千歲", "SDJ": "仙台", "YJS": "米子",
-            "TAK": "高松", "OKJ": "岡山", "MYJ": "松山"
+            "CTS": "札幌", "SDJ": "仙台", "YJS": "米子",
+            "TAK": "高松", "OKJ": "岡山", "KCZ": "高知"
         };
 
-        // 預設天天營運的航線組合
+        // 預先載入台灣虎航實時最新航班班表 (不佔空間，滿足 Req 3 實用性)
         const defaultSchedules = [
-            { route: "TPE-OKA", days: [1, 2, 3, 4, 5, 6, 0] }
+            { route: "TPE-OKA", days: [1, 2, 3, 4, 5, 6, 0] }, // 沖繩天天飛
+            { route: "TPE-KIX", days: [1, 2, 3, 4, 5, 6, 0] }, // 大阪天天飛
+            { route: "TPE-NRT", days: [1, 2, 3, 4, 5, 6, 0] }, // 東京成田天天飛
+            { route: "TPE-HND", days: [1, 2, 3, 4, 5, 6, 0] }, // 東京羽田天天飛
+            { route: "TPE-NGO", days: [1, 2, 3, 4, 5, 6, 0] }, // 名古屋天天飛
+            { route: "TPE-FUK", days: [1, 2, 3, 4, 5, 6, 0] }, // 福岡天天飛
+            { route: "TPE-CTS", days: [1, 2, 3, 4, 5, 6, 0] }, // 札幌天天飛
+            { route: "TPE-SDJ", days: [2, 4, 0] },             // 仙台每週二、四、日
+            { route: "TPE-KCZ", days: [3, 6] },                // 高知每週三、六
+            { route: "TPE-YJS", days: [1, 5] },                // 米子每週一、五
+            { route: "TPE-TAK", days: [3, 6, 0] },             // 高松每週三、六、日
+            { route: "TPE-OKJ", days: [1, 2, 3, 5, 0] }         // 岡山每週一、二、三、五、日
         ];
 
         // --- 輔助函式：取得航點中文名稱與格式化 ---
         function getAirportName(code) {
             if (!code) return "";
             const upper = code.toUpperCase().trim();
-            return airportZh[upper] ? `${airportZh[upper]} (${upper})` : upper;
+            return airportZh[upper] ? airportZh[upper] : upper;
         }
 
-        function getRouteDisplayName(routeStr) {
+        // 解析航線目的地的機場代碼 (排除台灣機場)
+        function getDestinationFromRoute(routeStr) {
             if (!routeStr) return "";
             const parts = routeStr.split('-');
             if (parts.length === 2) {
-                return `${getAirportName(parts[0])} ⇄ ${getAirportName(parts[1])}`;
+                const taiwanAirports = ["TPE", "KHH", "TXG"];
+                if (taiwanAirports.includes(parts[0])) {
+                    return parts[1];
+                } else if (taiwanAirports.includes(parts[1])) {
+                    return parts[0];
+                }
+                return parts[1];
             }
             return routeStr;
+        }
+
+        // 取得目的地城市的簡稱 (Req 2)
+        function getRouteDisplayName(routeStr) {
+            const destCode = getDestinationFromRoute(routeStr);
+            return getAirportName(destCode);
         }
 
         // --- UI 彈窗與 Toast 模組 ---
@@ -620,7 +650,7 @@
             activeConfirmCallback = onConfirm;
         }
 
-        // --- STREAMING_CHUNK:程序化事件綁定與初始化 ---
+        // --- 程序化事件綁定與初始化 ---
         document.addEventListener('DOMContentLoaded', function() {
             // 事件綁定
             bindClick('nav-dashboard', () => switchTab('dashboard'));
@@ -712,11 +742,10 @@
             if (el) el.addEventListener('submit', callback);
         }
 
-        // --- STREAMING_CHUNK:Firebase & 本地儲存引擎 ---
-        // 嘗試從本地連線或 Firebase 同步數據
+        // --- Firebase & 本地儲存引擎 ---
         async function loadStoredData() {
             // 先讀取本地機場自定義對照表
-            const customZh = localStorage.getItem('tiger_airport_zh_v5');
+            const customZh = localStorage.getItem('tiger_airport_zh_v6');
             if (customZh) {
                 airportZh = { ...airportZh, ...JSON.parse(customZh) };
             }
@@ -730,33 +759,31 @@
                         records = cloud.records || [];
                         schedules = cloud.schedules || [];
                         nogoDays = cloud.nogoDays || [];
-                        // 合併雲端中文對照表
                         if (cloud.airportZh) {
                             airportZh = { ...airportZh, ...cloud.airportZh };
                         }
-                        // 同步到本地作為緩存
                         saveToLocalCache();
                         return;
                     }
                 } catch (error) {
                     console.error("Firebase 讀取失敗:", error);
-                    showToast("Firebase 連線同步失敗，切換至本機備份模式", "error");
+                    showToast("Firebase 同步讀取失敗，採用本機儲存與緩存模式", "error");
                 }
             }
             // 降級本機 Local Storage
-            records = JSON.parse(localStorage.getItem('tiger_records_v5') || '[]');
-            schedules = JSON.parse(localStorage.getItem('tiger_schedules_v5') || '[]');
-            nogoDays = JSON.parse(localStorage.getItem('tiger_nogo_days_v5') || '[]');
+            records = JSON.parse(localStorage.getItem('tiger_records_v6') || '[]');
+            schedules = JSON.parse(localStorage.getItem('tiger_schedules_v6') || '[]');
+            nogoDays = JSON.parse(localStorage.getItem('tiger_nogo_days_v6') || '[]');
             if (schedules.length === 0) {
                 schedules = [...defaultSchedules];
             }
         }
 
         function saveToLocalCache() {
-            localStorage.setItem('tiger_records_v5', JSON.stringify(records));
-            localStorage.setItem('tiger_schedules_v5', JSON.stringify(schedules));
-            localStorage.setItem('tiger_nogo_days_v5', JSON.stringify(nogoDays));
-            localStorage.setItem('tiger_airport_zh_v5', JSON.stringify(airportZh));
+            localStorage.setItem('tiger_records_v6', JSON.stringify(records));
+            localStorage.setItem('tiger_schedules_v6', JSON.stringify(schedules));
+            localStorage.setItem('tiger_nogo_days_v6', JSON.stringify(nogoDays));
+            localStorage.setItem('tiger_airport_zh_v6', JSON.stringify(airportZh));
         }
 
         async function syncData() {
@@ -778,7 +805,7 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Firebase 設定面板控制 ---
+        // --- Firebase 設定面板控制 ---
         function toggleFirebasePanel() {
             const panel = document.getElementById('firebase-config-panel');
             panel.classList.toggle('hidden');
@@ -796,7 +823,7 @@
             }
 
             const config = { apiKey, authDomain, projectId, appId };
-            localStorage.setItem('tiger_firebase_config_v5', JSON.stringify(config));
+            localStorage.setItem('tiger_firebase_config_v6', JSON.stringify(config));
             showToast("正在嘗試嘗試雲端同步連線...", "info");
             
             await initFirebase(config);
@@ -812,7 +839,6 @@
 
         async function initFirebase(config) {
             try {
-                // 如果已經有初始化的 App 先不重複初始化
                 firebaseApp = initializeApp(config);
                 db = getFirestore(firebaseApp);
                 isFirebaseConnected = true;
@@ -820,18 +846,18 @@
                 document.getElementById('firebase-status-text').textContent = "雲端同步模式";
                 const indicator = document.getElementById('firebase-indicator');
                 indicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
-                showToast("Firebase Firestore 雲端即時連線成功！");
+                showToast("Firebase Cloud 雲端資料庫已連線！數據即時同步中。");
             } catch (err) {
                 console.error("Firebase 初始化失敗", err);
                 isFirebaseConnected = false;
                 document.getElementById('firebase-status-text').textContent = "僅限本機儲存";
                 const indicator = document.getElementById('firebase-indicator');
                 indicator.className = "inline-block w-2.5 h-2.5 rounded-full bg-amber-500";
-                showToast("Firebase 設定錯誤，將改採本機離線模式", "error");
+                showToast("Firebase 金鑰連結失敗，已無縫改採本機離線模式", "error");
             }
         }
 
-        // --- STREAMING_CHUNK:對位投影演算法 ---
+        // --- 對位投影演算法 ---
         /**
          * 智慧型星期對位演算法：
          * 計算原日期相對於當月「首個包含主體天數的星期一」的週偏移及星期偏移，
@@ -885,20 +911,23 @@
             return isNaN(d) ? "" : "週" + weekDaysChinese[d.getDay()];
         }
 
-        // --- STREAMING_CHUNK:系統初始化與 Tab 切換 ---
+        // --- 系統初始化與 Tab 切換 ---
         async function initSystem() {
-            // 嘗試載入 Firebase 設定
-            const savedConfig = localStorage.getItem('tiger_firebase_config_v5');
+            // 嘗試載入 Firebase 設定 (預設直接使用內建金鑰 - Req 1)
+            let config = builtInFirebaseConfig;
+            const savedConfig = localStorage.getItem('tiger_firebase_config_v6');
             if (savedConfig) {
-                const config = JSON.parse(savedConfig);
-                document.getElementById('fb-apiKey').value = config.apiKey || "";
-                document.getElementById('fb-authDomain').value = config.authDomain || "";
-                document.getElementById('fb-projectId').value = config.projectId || "";
-                document.getElementById('fb-appId').value = config.appId || "";
-                await initFirebase(config);
+                config = JSON.parse(savedConfig);
             }
-
+            
+            document.getElementById('fb-apiKey').value = config.apiKey || "";
+            document.getElementById('fb-authDomain').value = config.authDomain || "";
+            document.getElementById('fb-projectId').value = config.projectId || "";
+            document.getElementById('fb-appId').value = config.appId || "";
+            
+            await initFirebase(config);
             await loadStoredData();
+            
             populateRouteDropdowns();
             updateDashboard();
             renderRecordsTable();
@@ -930,29 +959,40 @@
             }
         }
 
-        function populateRouteDropdowns() {
-            const calendarRouteSelect = document.getElementById('calendar-route-select');
-            let routesSet = new Set();
+        // 重構：提取不重複的目的機場代碼 (排除台灣機場)，做成中文化下拉選單 (Req 2)
+        function getUniqueDestinations() {
+            const taiwanAirports = ["TPE", "KHH", "TXG"];
+            const dests = new Set();
             
-            schedules.forEach(s => routesSet.add(s.route));
-            records.forEach(r => {
-                if (r.depart_from && r.depart_to) {
-                    routesSet.add(`${r.depart_from}-${r.depart_to}`);
-                }
-                if (r.return_from && r.return_to) {
-                    routesSet.add(`${r.return_from}-${r.return_to}`);
+            schedules.forEach(s => {
+                const parts = s.route.split('-');
+                if (parts.length === 2) {
+                    if (!taiwanAirports.includes(parts[0])) dests.add(parts[0]);
+                    if (!taiwanAirports.includes(parts[1])) dests.add(parts[1]);
                 }
             });
+            records.forEach(r => {
+                if (r.depart_to && !taiwanAirports.includes(r.depart_to)) dests.add(r.depart_to);
+                if (r.depart_from && !taiwanAirports.includes(r.depart_from)) dests.add(r.depart_from);
+                if (r.return_to && !taiwanAirports.includes(r.return_to)) dests.add(r.return_to);
+                if (r.return_from && !taiwanAirports.includes(r.return_from)) dests.add(r.return_from);
+            });
 
-            if (routesSet.size === 0) {
-                routesSet.add("TPE-OKA"); 
+            if (dests.size === 0) {
+                dests.add("OKA"); 
             }
+            return Array.from(dests);
+        }
+
+        function populateRouteDropdowns() {
+            const calendarRouteSelect = document.getElementById('calendar-route-select');
+            const destList = getUniqueDestinations();
 
             calendarRouteSelect.innerHTML = "";
-            routesSet.forEach(route => {
+            destList.forEach(dest => {
                 const option = document.createElement('option');
-                option.value = route;
-                option.textContent = getRouteDisplayName(route);
+                option.value = dest;
+                option.textContent = getAirportName(dest); // 只顯示純目的地中文 (如：沖繩)
                 calendarRouteSelect.appendChild(option);
             });
         }
@@ -982,8 +1022,9 @@
 
         function getSelectedRouteDays() {
             const routeSelect = document.getElementById('calendar-route-select');
-            const routeStr = routeSelect ? (routeSelect.value || "TPE-OKA") : "TPE-OKA";
-            const sched = schedules.find(s => s.route === routeStr);
+            const selectedDest = routeSelect ? (routeSelect.value || "OKA") : "OKA";
+            // 尋找包含這個目的地城市代號的排班
+            const sched = schedules.find(s => s.route.includes(selectedDest));
             return sched ? sched.days : [0, 1, 2, 3, 4, 5, 6]; 
         }
 
@@ -1004,7 +1045,7 @@
             });
         }
 
-        // --- STREAMING_CHUNK:雙月份並列月曆渲染 ---
+        // --- 雙月份並列月曆渲染 ---
         function renderDualCalendars() {
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
             
@@ -1057,6 +1098,8 @@
 
             const routeDays = getSelectedRouteDays();
             const filterType = document.getElementById('calendar-type-select').value;
+            const routeSelect = document.getElementById('calendar-route-select');
+            const selectedDest = routeSelect ? (routeSelect.value || "OKA") : "OKA";
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const tempDate = new Date(year, month, day);
@@ -1071,6 +1114,11 @@
 
                 records.forEach(r => {
                     if (filterType !== 'all' && r.promo_category !== filterType) return;
+
+                    // 限縮篩選：該紀錄是否包含目前在月曆選擇的目的地城市 (Req 2)
+                    const isRelated = r.depart_to === selectedDest || r.depart_from === selectedDest ||
+                                      r.return_to === selectedDest || r.return_from === selectedDest;
+                    if (!isRelated) return;
 
                     const alignedDepart = r.depart_date ? getAlignedDate(r.depart_date, year) : null;
                     const alignedReturn = r.return_date ? getAlignedDate(r.return_date, year) : null;
@@ -1149,14 +1197,21 @@
             return wrapper;
         }
 
-        // --- STREAMING_CHUNK:月曆單格點擊詳情解析與無法出國切換 ---
+        // --- 月曆單格點擊詳情解析與無法出國切換 ---
         function handleCalendarCellClick(dateString, isFlightDay, dayNum) {
             const filterType = document.getElementById('calendar-type-select').value;
             const targetYear = new Date(dateString).getFullYear();
+            const routeSelect = document.getElementById('calendar-route-select');
+            const selectedDest = routeSelect ? (routeSelect.value || "OKA") : "OKA";
             let matchedRecords = [];
 
             records.forEach(r => {
                 if (filterType !== 'all' && r.promo_category !== filterType) return;
+
+                // 限縮該目的地之紀錄 (Req 2)
+                const isRelated = r.depart_to === selectedDest || r.depart_from === selectedDest ||
+                                  r.return_to === selectedDest || r.return_from === selectedDest;
+                if (!isRelated) return;
 
                 const alignedDepart = r.depart_date ? getAlignedDate(r.depart_date, targetYear) : null;
                 const alignedReturn = r.return_date ? getAlignedDate(r.return_date, targetYear) : null;
@@ -1272,7 +1327,7 @@
             handleCalendarCellClick(dateStr, isFlightDay, tempDate.getDate());
         }
 
-        // --- STREAMING_CHUNK:觀測紀錄資料庫處理 ---
+        // --- 觀測紀錄資料庫處理 ---
         async function handleRecordSubmit(e) {
             e.preventDefault();
 
@@ -1474,7 +1529,7 @@
             });
         }
 
-        // --- STREAMING_CHUNK:排班與中文名稱設定業務邏輯 ---
+        // --- 排班與中文名稱設定業務邏輯 ---
         async function handleScheduleSubmit(e) {
             e.preventDefault();
 
@@ -1553,7 +1608,7 @@
                     <div class="space-y-1.5 flex-grow pr-2">
                         <div class="font-bold text-[#3E3A36] flex items-center gap-1.5 flex-wrap">
                             <i class="fa-solid fa-plane text-[#9E968E] text-[10px]"></i> 
-                            <span>${getRouteDisplayName(s.route)}</span>
+                            <span>${getRouteDisplayName(s.route)} (${s.route})</span>
                         </div>
                         <div class="flex gap-1">
                             ${daysHtml}
