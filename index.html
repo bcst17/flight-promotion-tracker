@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虎航促銷機票預測與觀測系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 圖標庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 莫蘭迪低飽和度 & 虎航主題色彩變數定義 */
+        :root {
+            --tiger-charcoal: #3E3A36;     /* 虎航Logo深炭灰 - 穩定深沉的主基調 */
+            --tiger-yellow: #EAA122;       /* 溫潤虎航黃 - 低飽和黃色 */
+            --tiger-yellow-light: #FDF3DF; /* 淺米黃 - 去程與亮點色 */
+            --tiger-white-bg: #FAF6EE;     /* 亞麻暖白 - 整體背景色 */
+            --tiger-white-card: #FFFDF9;   /* 暖白 - 卡片與容器 */
+            --tiger-gray-muted: #9E968E;   /* 灰泥色 - 回程與邊框 */
+            --tiger-gray-bg: #EFE9DB;      /* 灰白 - 預設與非營運日 */
+            --tiger-red-muted: #C07A7A;    /* 莫蘭迪紅 - 錯誤與警示 */
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--tiger-white-bg);
+            color: var(--tiger-charcoal);
+        }
+
+        /* 自定義滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--tiger-white-bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--tiger-yellow);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--tiger-charcoal);
+        }
+
+        /* 莫蘭迪微影與圓角調整 */
+        .morandi-shadow {
+            box-shadow: 0 4px 20px -2px rgba(62, 58, 54, 0.05);
+        }
+        .morandi-border {
+            border-color: #EFE9DB;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-16 md:pb-0">
+
+    <!-- 內建自定義 Toast 吐司提示容器 -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- 內建自定義 Confirm 確認對話框 -->
+    <div id="confirm-modal" class="fixed inset-0 bg-[#3E3A36]/40 backdrop-blur-xs z-[100] flex items-center justify-center hidden">
+        <div class="bg-[#FFFDF9] rounded-xl shadow-lg border border-[#EFE9DB] max-w-sm w-full p-5 space-y-4 mx-4 morandi-shadow">
+            <h3 class="text-xs font-bold text-[#3E3A36] uppercase tracking-wider flex items-center gap-1.5" id="confirm-title">
+                <i class="fa-solid fa-triangle-exclamation text-[#EAA122]"></i> 確認執行
+            </h3>
+            <p class="text-xs text-[#9E968E] leading-relaxed" id="confirm-message">確定要執行這項操作嗎？</p>
+            <div class="flex justify-end gap-2 text-xs font-semibold pt-1">
+                <button id="confirm-cancel" class="px-3 py-2 bg-[#EFE9DB] hover:bg-[#E4DCD0] text-[#3E3A36] rounded-lg transition duration-200">
+                    取消
+                </button>
+                <button id="confirm-ok" class="px-3 py-2 bg-[#3E3A36] hover:bg-[#2C2926] text-white rounded-lg transition duration-200">
+                    確認
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頂部導航欄 (虎航主題與莫蘭迪融合) -->
+    <header class="bg-[#3E3A36] text-[#FFFDF9] shadow-sm border-b-2 border-[#EAA122] sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 bg-[#EAA122] rounded-lg flex items-center justify-center text-[#3E3A36] shadow-xs">
+                        <i class="fa-solid fa-plane-departure text-base"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xs sm:text-sm font-bold tracking-wider text-[#FDF3DF] flex items-center gap-2">
+                            虎航促銷觀測與預測系統
+                        </h1>
+                        <p class="text-[9px] text-[#9E968E]">精準星期對齊投影與營運班表校驗平台</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex space-x-2">
+                    <button id="nav-dashboard" class="tab-btn px-4 py-2 rounded-md text-xs font-semibold bg-[#EAA122] text-[#3E3A36] shadow-xs transition duration-200">
+                        <i class="fa-solid fa-calendar-days mr-1.5"></i> 雙月觀測月曆
+                    </button>
+                    <button id="nav-records" class="tab-btn px-4 py-2 rounded-md text-xs font-semibold text-[#9E968E] hover:bg-[#4E4944] hover:text-[#FFFDF9] transition duration-200">
+                        <i class="fa-solid fa-list mr-1.5"></i> 觀測紀錄管理
+                    </button>
+                    <button id="nav-schedules" class="tab-btn px-4 py-2 rounded-md text-xs font-semibold text-[#9E968E] hover:bg-[#4E4944] hover:text-[#FFFDF9] transition duration-200">
+                        <i class="fa-solid fa-clock mr-1.5"></i> 航線排班設定
+                    </button>
+                </div>
+                <div>
+                    <button id="btn-load-mock" class="text-[10px] bg-[#4E4944] hover:bg-[#5E5852] border border-[#5E5852] text-[#FFFDF9] px-2.5 py-1.5 rounded transition duration-200" title="載入測試示範數據">
+                        <i class="fa-solid fa-database mr-1"></i> 載入範例數據
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 行動裝置底欄導航 -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-[#3E3A36] border-t border-[#4E4944] grid grid-cols-3 text-center py-2 z-50 text-[10px]">
+        <button id="mob-dashboard" class="mob-tab-btn text-[#EAA122] flex flex-col items-center">
+            <i class="fa-solid fa-calendar-days text-base mb-1"></i>
+            <span>觀測月曆</span>
+        </button>
+        <button id="mob-records" class="mob-tab-btn text-[#9E968E] flex flex-col items-center">
+            <i class="fa-solid fa-list text-base mb-1"></i>
+            <span>觀測紀錄</span>
+        </button>
+        <button id="mob-schedules" class="mob-tab-btn text-[#9E968E] flex flex-col items-center">
+            <i class="fa-solid fa-clock text-base mb-1"></i>
+            <span>排班設定</span>
+        </button>
+    </div>
+
+    <!-- 主體內容區 -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 mb-16 md:mb-6">
+
+        <!-- Tab 1: Dashboard (雙月曆觀測) -->
+        <div id="tab-dashboard" class="tab-content block space-y-5">
+            
+            <!-- 篩選與基本配置區 -->
+            <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] morandi-shadow">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#9E968E] uppercase tracking-wider mb-1.5">
+                            <i class="fa-solid fa-calendar-check mr-1 text-[#EAA122]"></i> 設定預測目標年份
+                        </label>
+                        <select id="target-year-select" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-semibold rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#EAA122]">
+                            <option value="2026">2026 年</option>
+                            <option value="2027" selected>2027 年 (預測目標)</option>
+                            <option value="2028">2028 年</option>
+                            <option value="2029">2029 年</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#9E968E] uppercase tracking-wider mb-1.5">
+                            <i class="fa-solid fa-route mr-1 text-[#EAA122]"></i> 選擇觀測航線
+                        </label>
+                        <select id="calendar-route-select" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-semibold rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#EAA122]">
+                            <!-- JS 動態渲染 -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-[#9E968E] uppercase tracking-wider mb-1.5">
+                            <i class="fa-solid fa-filter mr-1 text-[#EAA122]"></i> 促銷類型過濾
+                        </label>
+                        <select id="calendar-type-select" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-semibold rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#EAA122]">
+                            <option value="all" selected>全部紀錄 (PTT + 自查)</option>
+                            <option value="anniversary">九月底：週年大促</option>
+                            <option value="easter">三月底：復活節/春大促</option>
+                            <option value="flash">其餘不定期促銷</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 月曆與說明區塊 -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
+                
+                <!-- 左側：班表營運狀態 -->
+                <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] space-y-4 lg:col-span-1 morandi-shadow">
+                    <h3 class="text-xs font-bold text-[#3E3A36] border-b border-[#EFE9DB] pb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-[#EAA122]"></i> 當前航線營運日
+                    </h3>
+                    
+                    <div class="bg-[#FAF6EE] rounded-lg p-3 border border-[#EFE9DB]">
+                        <div class="grid grid-cols-7 gap-1 text-center text-[10px]" id="route-days-preview">
+                            <!-- JS 動態生成 -->
+                        </div>
+                        <p class="text-[9px] text-[#9E968E] mt-2.5 leading-relaxed">
+                            對齊後的預估日若落在「非營運日」，日期格子將顯示紅框與刪除線以警示無航班。
+                        </p>
+                    </div>
+
+                    <!-- 星期對齊說明圖例 -->
+                    <div class="bg-[#FAF6EE] rounded-lg p-3 border border-[#EFE9DB] text-[10px] space-y-2">
+                        <h4 class="font-bold text-[#3E3A36] flex items-center gap-1">
+                            <i class="fa-solid fa-sliders text-[#EAA122]"></i> 指示指標與定義
+                        </h4>
+                        <div class="space-y-2 font-medium">
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 text-center text-[#EAA122] font-extrabold text-sm">→</span>
+                                <span class="text-[#9E968E]">去程對齊預估日</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 text-center text-[#9E968E] font-extrabold text-sm">←</span>
+                                <span class="text-[#9E968E]">回程對齊預估日</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 text-center text-[#3E3A36] font-extrabold text-sm">⇆</span>
+                                <span class="text-[#9E968E]">去回程重合預估日</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-6 h-3 rounded bg-[#FFFDF9] border border-[#EFE9DB] inline-block"></span>
+                                <span class="text-[#9E968E]">常規飛航營運日</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：雙月份並列月曆 -->
+                <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] lg:col-span-3 flex flex-col space-y-4 morandi-shadow">
+                    <div class="flex items-center justify-between pb-2 border-b border-[#FAF6EE]">
+                        <div class="flex items-center space-x-1">
+                            <button id="btn-prev-month" class="p-1.5 hover:bg-[#FAF6EE] rounded text-[#3E3A36] transition duration-200">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <span class="text-xs font-bold text-[#3E3A36]" id="calendar-range-label">2027年 5月 - 6月</span>
+                            <button id="btn-next-month" class="p-1.5 hover:bg-[#FAF6EE] rounded text-[#3E3A36] transition duration-200">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
+                        <span class="text-[9px] text-[#9E968E]">對應：同月份第 N 個星期幾</span>
+                    </div>
+
+                    <!-- 雙月份並列容器 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="dual-calendars-container">
+                        <!-- JS 動態渲染兩個月份 -->
+                    </div>
+                    
+                    <!-- 選定日期的細部解析 -->
+                    <div class="p-3 bg-[#FAF6EE] rounded-lg border border-[#EFE9DB] hidden" id="calendar-day-detail">
+                        <h4 class="font-bold text-xs text-[#3E3A36] flex items-center gap-1.5 mb-1.5">
+                            <i class="fa-solid fa-circle-question text-[#EAA122]"></i> 選定日期對齊比對詳情
+                        </h4>
+                        <div id="calendar-day-detail-content" class="text-xs text-[#9E968E] leading-relaxed">
+                            <!-- JS 動態寫入內容 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Records (紀錄管理) -->
+        <div id="tab-records" class="tab-content hidden space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                
+                <!-- 左側：新增紀錄表單 -->
+                <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] space-y-4 morandi-shadow">
+                    <h3 class="text-xs font-bold text-[#3E3A36] border-b border-[#EFE9DB] pb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus text-[#EAA122]"></i> 新增促銷 / 查價紀錄
+                    </h3>
+                    
+                    <form id="record-form" class="space-y-4 text-xs">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-[#9E968E] mb-1">紀錄來源性質</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center justify-center p-2 border border-[#EFE9DB] rounded-lg cursor-pointer hover:bg-[#FAF6EE] transition">
+                                    <input type="radio" name="source_type" value="PTT" checked class="mr-1.5 accent-[#EAA122]">
+                                    <span class="text-[#3E3A36] font-semibold">PTT 搶票回報</span>
+                                </label>
+                                <label class="flex items-center justify-center p-2 border border-[#EFE9DB] rounded-lg cursor-pointer hover:bg-[#FAF6EE] transition">
+                                    <input type="radio" name="source_type" value="Spot" class="mr-1.5 accent-[#EAA122]">
+                                    <span class="text-[#3E3A36] font-semibold">官網最低價自查</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 航點輸入(可分開去回填寫) -->
+                        <div class="space-y-3">
+                            <div class="border-l-2 border-[#EAA122] pl-2 space-y-2">
+                                <span class="text-[10px] font-bold text-[#3E3A36]">去程航班 (選填)</span>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">出發地 (TPE)</span>
+                                        <input type="text" id="record-depart-from" placeholder="例如: TPE" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">目的地 (OKA)</span>
+                                        <input type="text" id="record-depart-to" placeholder="例如: OKA" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">歷史日期</span>
+                                        <input type="date" id="record-depart-date" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-semibold outline-none text-[#3E3A36]">
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">未稅票價</span>
+                                        <input type="number" id="record-depart-price" placeholder="例如: 1599" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 outline-none focus:bg-white text-[#3E3A36]">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border-l-2 border-[#9E968E] pl-2 space-y-2">
+                                <span class="text-[10px] font-bold text-[#3E3A36]">回程航班 (選填)</span>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">出發地 (NGO)</span>
+                                        <input type="text" id="record-return-from" placeholder="例如: NGO" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">目的地 (TPE)</span>
+                                        <input type="text" id="record-return-to" placeholder="例如: TPE" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">歷史日期</span>
+                                        <input type="date" id="record-return-date" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-semibold outline-none text-[#3E3A36]">
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">未稅票價</span>
+                                        <input type="number" id="record-return-price" placeholder="例如: 1899" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 outline-none focus:bg-white text-[#3E3A36]">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-semibold text-[#9E968E] mb-1">促銷檔期分類</label>
+                            <select id="record-promo-category" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-2 font-semibold outline-none focus:bg-white text-[#3E3A36]">
+                                <option value="anniversary">九月底：週年大促銷</option>
+                                <option value="easter">三月底：復活節/春季促銷</option>
+                                <option value="flash">其餘不定期促銷</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-[#3E3A36] hover:bg-[#2C2926] text-white font-bold p-2.5 rounded-lg shadow-xs transition duration-200 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-floppy-disk"></i> 儲存觀測紀錄
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 右側：現有數據清單與備份 -->
+                <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] lg:col-span-2 space-y-5 morandi-shadow">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#FAF6EE]">
+                        <h3 class="text-xs font-bold text-[#3E3A36] flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-open text-[#9E968E]"></i> 已錄入觀測紀錄清單
+                        </h3>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <input type="text" id="record-search" placeholder="搜尋航點..." class="border border-[#EFE9DB] rounded px-2 py-1 text-xs outline-none focus:border-[#EAA122] max-w-[120px] bg-[#FAF6EE] text-[#3E3A36]">
+                            <button id="btn-clear-all" class="bg-[#FDF3DF] hover:bg-[#F3E7CE] text-[#C07A7A] text-[10px] px-2 py-1 rounded border border-[#EFE9DB] transition duration-200 font-semibold">
+                                清空全部
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 資料備份與還原功能 -->
+                    <div class="bg-[#FAF6EE] rounded-lg p-3 border border-[#EFE9DB] flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="space-y-0.5">
+                            <p class="font-bold text-[#3E3A36] flex items-center gap-1">
+                                <i class="fa-solid fa-database text-[#EAA122]"></i> 資料本地永久備份機制
+                            </p>
+                            <p class="text-[10px] text-[#9E968E]">本系統資料保存在本地瀏覽器中，亦可手動導出 JSON 以防遺失。</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="btn-export" class="bg-white hover:bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] text-[10px] px-2.5 py-1.5 rounded transition duration-200 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> 導出 JSON 備份
+                            </button>
+                            <label class="bg-[#3E3A36] hover:bg-[#2C2926] text-white text-[10px] px-2.5 py-1.5 rounded transition duration-200 font-bold flex items-center gap-1 cursor-pointer">
+                                <i class="fa-solid fa-upload"></i> 導入備份檔
+                                <input type="file" id="import-file-input" class="hidden" accept=".json">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 紀錄展示表格 -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-[#FAF6EE] text-[#9E968E] border-b border-[#EFE9DB] font-semibold text-[11px]">
+                                    <th class="p-2.5">分類與來源</th>
+                                    <th class="p-2.5">去程航線 / 歷史對齊 (星期)</th>
+                                    <th class="p-2.5">回程航線 / 歷史對齊 (星期)</th>
+                                    <th class="p-2.5">未稅票價 (單程)</th>
+                                    <th class="p-2.5 text-center">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-table-body" class="divide-y divide-[#FAF6EE]">
+                                <!-- JS 動態渲染 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Schedules (排班時間) -->
+        <div id="tab-schedules" class="tab-content hidden space-y-5">
+            <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] space-y-5 morandi-shadow">
+                <div>
+                    <h3 class="text-xs font-bold text-[#3E3A36] flex items-center gap-1.5">
+                        <i class="fa-solid fa-calendar-week text-[#EAA122]"></i> 航線班表與營運日設定
+                    </h3>
+                    <p class="text-[11px] text-[#9E968E] mt-1 leading-relaxed">
+                        在下方為您的特定航線設定每週固定起降的星期。對齊推演時，系統會自動標記並刪除「無航班」的預測，避免無效查價。
+                    </p>
+                </div>
+
+                <!-- 新增航班設定 -->
+                <form id="schedule-form" class="bg-[#FAF6EE] rounded-lg p-3 border border-[#EFE9DB] grid grid-cols-1 md:grid-cols-4 gap-3 text-xs items-end">
+                    <div>
+                        <label class="block font-semibold text-[#9E968E] mb-1">航線組合 (格式：TPE-OKA)</label>
+                        <input type="text" id="sched-route" required placeholder="例如: TPE-OKA" class="w-full bg-white border border-[#EFE9DB] rounded p-2 font-bold text-[#3E3A36] uppercase outline-none focus:ring-1 focus:ring-[#EAA122]">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block font-semibold text-[#9E968E] mb-1">每週營運星期 (複選)</label>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="1" class="mr-1 accent-[#EAA122]"> 一
+                            </label>
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="2" class="mr-1 accent-[#EAA122]"> 二
+                            </label>
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="3" class="mr-1 accent-[#EAA122]"> 三
+                            </label>
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="4" class="mr-1 accent-[#EAA122]"> 四
+                            </label>
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="5" class="mr-1 accent-[#EAA122]"> 五
+                            </label>
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="6" class="mr-1 accent-[#EAA122]"> 六
+                            </label>
+                            <label class="flex items-center px-2 py-1.5 bg-white border border-[#EFE9DB] rounded cursor-pointer hover:bg-[#FAF6EE]">
+                                <input type="checkbox" name="sched_days" value="0" class="mr-1 accent-[#EAA122]"> 日
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-[#3E3A36] hover:bg-[#2C2926] text-white font-bold p-2.5 rounded transition duration-200">
+                            <i class="fa-solid fa-plus-circle mr-1"></i> 設定 / 更新營運日
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 航班設定清單 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="schedules-list">
+                    <!-- JS 動態生成營運卡片 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-4 border-t border-[#4E4944] mt-auto hidden md:block">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p>虎航促銷機票預測與觀測系統 · 自我儲存與高防護程序化對齊版</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 核心狀態管理與資料庫資料 ---
+        let records = [];
+        let schedules = [];
+        let currentYear = 2027; // 預設觀測預期年份
+        let currentMonth = 4;   // 0-indexed, 4 = 5月 (為了直觀展示 5月 跨 6月對位效果)
+        let activeConfirmCallback = null;
+
+        // PTT 推文促銷歷史示範數據 (包含您提到的 2025年 及 2026年 範例)
+        const sampleRecords = [
+            {
+                id: "r1",
+                source_type: "PTT",
+                depart_from: "TPE",
+                depart_to: "OKA",
+                return_from: "OKA",
+                return_to: "TPE",
+                promo_category: "flash",
+                depart_date: "2025-06-03", // 2025/06/03 (週二)
+                return_date: "2025-06-13",  // 2025/06/13 (週五)
+                depart_price: 1599,
+                return_price: 1899
+            },
+            {
+                id: "r2",
+                source_type: "PTT",
+                depart_from: "TPE",
+                depart_to: "OKA",
+                return_from: "OKA",
+                return_to: "TPE",
+                promo_category: "flash",
+                depart_date: "2026-06-01", // 2026/06/01 (週一)
+                return_date: "2026-06-04",  // 2026/06/04 (週四)
+                depart_price: 1699,
+                return_price: 1799
+            }
+        ];
+
+        // 預載航線排班範例
+        const defaultSchedules = [
+            { route: "TPE-OKA", days: [1, 2, 3, 4, 5, 6, 0] } // 沖繩每天飛
+        ];
+
+        // --- UI彈窗與Toast模組 ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = "bg-[#3E3A36] text-[#FFFDF9] border-[#EAA122]";
+            let iconClass = "fa-circle-check text-[#EAA122]";
+            if (type === 'error') {
+                bgClass = "bg-[#C07A7A] text-white border-[#EFE9DB]";
+                iconClass = "fa-triangle-exclamation text-[#FFFDF9]";
+            } else if (type === 'info') {
+                bgClass = "bg-[#9E968E] text-white border-[#EFE9DB]";
+                iconClass = "fa-circle-info text-[#FDF3DF]";
+            }
+
+            toast.className = `${bgClass} flex items-center gap-2 px-3.5 py-2.5 rounded-lg shadow-md border text-[11px] font-semibold transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function showConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[#EAA122]"></i> ${title}`;
+            document.getElementById('confirm-message').textContent = message;
+            
+            modal.classList.remove('hidden');
+            activeConfirmCallback = onConfirm;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 頂層全程序化綁定（徹底規避 Canvas 沙盒的內嵌行聯封鎖）
+            
+            bindClick('nav-dashboard', () => switchTab('dashboard'));
+            bindClick('nav-records', () => switchTab('records'));
+            bindClick('nav-schedules', () => switchTab('schedules'));
+
+            bindClick('mob-dashboard', () => switchTab('dashboard'));
+            bindClick('mob-records', () => switchTab('records'));
+            bindClick('mob-schedules', () => switchTab('schedules'));
+
+            bindClick('btn-load-mock', loadMockData);
+            bindClick('btn-prev-month', () => changeMonth(-1));
+            bindClick('btn-next-month', () => changeMonth(1));
+            bindClick('btn-clear-all', confirmClearAllRecords);
+            bindClick('btn-export', exportDataToJSON);
+
+            bindClick('confirm-cancel', () => {
+                document.getElementById('confirm-modal').classList.add('hidden');
+                activeConfirmCallback = null;
+            });
+            bindClick('confirm-ok', () => {
+                document.getElementById('confirm-modal').classList.add('hidden');
+                if (typeof activeConfirmCallback === 'function') activeConfirmCallback();
+                activeConfirmCallback = null;
+            });
+
+            bindEvent('target-year-select', 'change', updateDashboard);
+            bindEvent('calendar-route-select', 'change', updateDashboard);
+            bindEvent('calendar-type-select', 'change', updateDashboard);
+            bindEvent('record-search', 'input', renderRecordsTable);
+
+            bindFormSubmit('record-form', handleRecordSubmit);
+            bindFormSubmit('schedule-form', handleScheduleSubmit);
+
+            bindEvent('import-file-input', 'change', importDataFromJSON);
+
+            // 事件委派：動態生成元素監聽
+            document.getElementById('records-table-body').addEventListener('click', function(e) {
+                const deleteBtn = e.target.closest('[data-delete-record]');
+                if (deleteBtn) {
+                    const recordId = deleteBtn.getAttribute('data-delete-record');
+                    deleteRecord(recordId);
+                }
+            });
+
+            document.getElementById('schedules-list').addEventListener('click', function(e) {
+                const deleteBtn = e.target.closest('[data-delete-schedule]');
+                if (deleteBtn) {
+                    const route = deleteBtn.getAttribute('data-delete-schedule');
+                    deleteSchedule(route);
+                }
+            });
+
+            document.getElementById('dual-calendars-container').addEventListener('click', function(e) {
+                const dayCell = e.target.closest('[data-day-cell]');
+                if (dayCell) {
+                    const dateStr = dayCell.getAttribute('data-day-date');
+                    const isFlightDay = dayCell.getAttribute('data-day-flight') === 'true';
+                    const dayNum = parseInt(dayCell.getAttribute('data-day-num'));
+                    handleCalendarCellClick(dateStr, isFlightDay, dayNum);
+                }
+            });
+
+            initSystem();
+        });
+
+        function bindClick(id, callback) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('click', callback);
+        }
+        function bindEvent(id, eventType, callback) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener(eventType, callback);
+        }
+        function bindFormSubmit(id, callback) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('submit', callback);
+        }
+
+        /**
+         * 智慧型日曆週星期對位演算法：
+         * 基於「首個包含主體天數的星期一」來換算 originalDate 所在的相對週別與星期，
+         * 並投射到目標年份的同一個相對月份中。
+         * 可精確將 2025/6/3 -> 2027/6/1； 2025/6/13 -> 2027/6/11。
+         */
+        function getAlignedDate(originalDateStr, targetYear) {
+            const orig = new Date(originalDateStr);
+            if (isNaN(orig)) return null;
+
+            const origMonth = orig.getMonth();
+            const origYear = orig.getFullYear();
+
+            // 定位月份的第1週起始週一（若1號是星期日，則第1週從2號星期一開始算）
+            function getFirstWeekStartMonday(year, month) {
+                const firstDay = new Date(year, month, 1);
+                const firstDayWeekday = firstDay.getDay(); // 0代表週日
+                
+                if (firstDayWeekday === 0) {
+                    return new Date(year, month, 2); // 星期日算做上一週的尾巴，故本月第1週由2號(週一)起算
+                } else {
+                    const diffToMonday = firstDayWeekday - 1;
+                    return new Date(year, month, 1 - diffToMonday);
+                }
+            }
+
+            const origStartMonday = getFirstWeekStartMonday(origYear, origMonth);
+            const diffTime = orig.getTime() - origStartMonday.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            const weekIndex = Math.floor(diffDays / 7);
+            const dayOffset = diffDays % 7; // 相對於週一的偏移(0-6)
+
+            const targetStartMonday = getFirstWeekStartMonday(targetYear, origMonth);
+            const projectedDate = new Date(targetStartMonday.getTime());
+            projectedDate.setDate(projectedDate.getDate() + (weekIndex * 7) + dayOffset);
+
+            return projectedDate;
+        }
+
+        function formatDate(date) {
+            if (!date) return "";
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        const weekDaysChinese = ["日", "一", "二", "三", "四", "五", "六"];
+        function getWeekdayName(dateStr) {
+            const d = new Date(dateStr);
+            return isNaN(d) ? "" : "週" + weekDaysChinese[d.getDay()];
+        }
+
+        function initSystem() {
+            if (localStorage.getItem('tiger_records_v5')) {
+                records = JSON.parse(localStorage.getItem('tiger_records_v5'));
+            } else {
+                records = [];
+                localStorage.setItem('tiger_records_v5', JSON.stringify(records));
+            }
+
+            if (localStorage.getItem('tiger_schedules_v5')) {
+                schedules = JSON.parse(localStorage.getItem('tiger_schedules_v5'));
+            } else {
+                schedules = [...defaultSchedules];
+                localStorage.setItem('tiger_schedules_v5', JSON.stringify(schedules));
+            }
+
+            populateRouteDropdowns();
+            updateDashboard();
+            renderRecordsTable();
+            renderSchedulesList();
+        }
+
+        function loadMockData() {
+            showConfirm("載入示範數據", "這將會用包含 2025/6/3、2026/6/1 沖繩對齊數據覆蓋您現有的資料庫，確定嗎？", () => {
+                records = [...sampleRecords];
+                schedules = [...defaultSchedules];
+                localStorage.setItem('tiger_records_v5', JSON.stringify(records));
+                localStorage.setItem('tiger_schedules_v5', JSON.stringify(schedules));
+                
+                populateRouteDropdowns();
+                renderRecordsTable();
+                renderSchedulesList();
+                
+                currentYear = 2027;
+                currentMonth = 4; // 定位在2027年5月、6月查看對齊效果
+                const yrSelect = document.getElementById('target-year-select');
+                if (yrSelect) yrSelect.value = "2027";
+                
+                updateDashboard();
+                showToast("成功載入示範數據！對位投射至 2027 年 5-6 月。");
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-4 py-2 rounded-md text-xs font-semibold text-[#9E968E] hover:bg-[#4E4944] hover:text-[#FFFDF9] transition duration-200";
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.className = "tab-btn px-4 py-2 rounded-md text-xs font-semibold bg-[#EAA122] text-[#3E3A36] shadow-xs transition duration-200";
+            }
+
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
+                btn.className = "mob-tab-btn text-[#9E968E] flex flex-col items-center";
+            });
+            const activeMobNav = document.getElementById(`mob-${tabId}`);
+            if (activeMobNav) {
+                activeMobNav.className = "mob-tab-btn text-[#EAA122] flex flex-col items-center";
+            }
+
+            if (tabId === 'dashboard') {
+                updateDashboard();
+            }
+        }
+
+        function populateRouteDropdowns() {
+            const calendarRouteSelect = document.getElementById('calendar-route-select');
+            let routesSet = new Set();
+            
+            schedules.forEach(s => routesSet.add(s.route));
+            records.forEach(r => {
+                if (r.depart_from && r.depart_to) {
+                    routesSet.add(`${r.depart_from}-${r.depart_to}`);
+                }
+                if (r.return_from && r.return_to) {
+                    routesSet.add(`${r.return_from}-${r.return_to}`);
+                }
+            });
+
+            if (routesSet.size === 0) {
+                routesSet.add("TPE-OKA"); 
+            }
+
+            calendarRouteSelect.innerHTML = "";
+            routesSet.forEach(route => {
+                const option = document.createElement('option');
+                option.value = route;
+                option.textContent = route;
+                calendarRouteSelect.appendChild(option);
+            });
+        }
+
+        function changeMonth(dir) {
+            currentMonth += dir;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            const yearSelect = document.getElementById('target-year-select');
+            if (yearSelect) {
+                yearSelect.value = currentYear.toString();
+            }
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const targetSelect = document.getElementById('target-year-select');
+            currentYear = targetSelect ? parseInt(targetSelect.value) : 2027;
+            renderRouteDaysPreview();
+            renderDualCalendars();
+        }
+
+        function getSelectedRouteDays() {
+            const routeSelect = document.getElementById('calendar-route-select');
+            const routeStr = routeSelect ? (routeSelect.value || "TPE-OKA") : "TPE-OKA";
+            const sched = schedules.find(s => s.route === routeStr);
+            return sched ? sched.days : [0, 1, 2, 3, 4, 5, 6]; 
+        }
+
+        function renderRouteDaysPreview() {
+            const activeDays = getSelectedRouteDays();
+            const container = document.getElementById('route-days-preview');
+            container.innerHTML = "";
+
+            const order = [1, 2, 3, 4, 5, 6, 0];
+            order.forEach(dayIndex => {
+                const isActive = activeDays.includes(dayIndex);
+                const dot = document.createElement('div');
+                dot.className = `p-1 rounded text-[10px] font-bold transition-all ${
+                    isActive ? 'bg-[#3E3A36] text-white shadow-xs' : 'bg-[#EFE9DB] text-[#9E968E] line-through'
+                }`;
+                dot.textContent = weekDaysChinese[dayIndex];
+                container.appendChild(dot);
+            });
+        }
+
+        function renderDualCalendars() {
+            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+            
+            let m1_year = currentYear;
+            let m1_month = currentMonth;
+            
+            let m2_year = m1_month === 11 ? m1_year + 1 : m1_year;
+            let m2_month = (m1_month + 1) % 12;
+
+            document.getElementById('calendar-range-label').textContent = 
+                `${m1_year}年 ${monthNames[m1_month]} - ${m2_year}年 ${monthNames[m2_month]}`;
+
+            const container = document.getElementById('dual-calendars-container');
+            container.innerHTML = "";
+
+            container.appendChild(buildMonthDOM(m1_year, m1_month));
+            container.appendChild(buildMonthDOM(m2_year, m2_month));
+        }
+
+        function buildMonthDOM(year, month) {
+            const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
+            const wrapper = document.createElement('div');
+            wrapper.className = "space-y-1.5";
+
+            const header = document.createElement('div');
+            header.className = "text-[11px] font-bold text-[#3E3A36] bg-[#FAF6EE] py-1.5 px-2.5 rounded flex justify-between border border-[#EFE9DB]";
+            header.innerHTML = `<span>${year}年 ${monthNames[month]}</span> <span class="text-[#9E968E] font-normal">Month</span>`;
+            wrapper.appendChild(header);
+
+            const weekHeader = document.createElement('div');
+            weekHeader.className = "grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-[#9E968E] pb-0.5";
+            weekHeader.innerHTML = "<div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>";
+            wrapper.appendChild(weekHeader);
+
+            const daysGrid = document.createElement('div');
+            daysGrid.className = "grid grid-cols-7 gap-1 text-xs";
+
+            const firstDayOfMonth = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let startWeekday = firstDayOfMonth.getDay(); 
+            let emptyCellsCount = startWeekday === 0 ? 6 : startWeekday - 1;
+
+            for (let i = 0; i < emptyCellsCount; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "bg-[#FAF6EE]/10 rounded h-10 border border-transparent";
+                daysGrid.appendChild(emptyCell);
+            }
+
+            const routeDays = getSelectedRouteDays();
+            const filterType = document.getElementById('calendar-type-select').value;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const tempDate = new Date(year, month, day);
+                const dateString = formatDate(tempDate);
+                const weekday = tempDate.getDay(); 
+
+                const isFlightDay = routeDays.includes(weekday);
+
+                let isAlignedDepart = false; 
+                let isAlignedReturn = false; 
+
+                records.forEach(r => {
+                    if (filterType !== 'all' && r.promo_category !== filterType) return;
+
+                    const alignedDepart = r.depart_date ? getAlignedDate(r.depart_date, year) : null;
+                    const alignedReturn = r.return_date ? getAlignedDate(r.return_date, year) : null;
+
+                    if (alignedDepart && formatDate(alignedDepart) === dateString) {
+                        isAlignedDepart = true;
+                    }
+                    if (alignedReturn && formatDate(alignedReturn) === dateString) {
+                        isAlignedReturn = true;
+                    }
+                });
+
+                const dayCell = document.createElement('div');
+                dayCell.setAttribute('data-day-cell', 'true');
+                dayCell.setAttribute('data-day-date', dateString);
+                dayCell.setAttribute('data-day-flight', isFlightDay ? 'true' : 'false');
+                dayCell.setAttribute('data-day-num', day);
+
+                let bgClass = "bg-[#FFFDF9] text-[#3E3A36] border-[#EFE9DB] hover:bg-[#FAF6EE]";
+                let textClass = "";
+                let arrowIndicator = "";
+
+                if (isAlignedDepart && isAlignedReturn) {
+                    arrowIndicator = '<span class="text-[#3E3A36] font-bold text-xs">⇆</span>';
+                    if (isFlightDay) {
+                        bgClass = "bg-[#FDF3DF] border-[#EAA122] font-bold";
+                    } else {
+                        bgClass = "bg-[#FDF3DF]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
+                    }
+                } else if (isAlignedDepart) {
+                    arrowIndicator = '<span class="text-[#EAA122] font-extrabold text-xs">→</span>';
+                    if (isFlightDay) {
+                        bgClass = "bg-[#FDF3DF]/80 border-[#EAA122] font-bold";
+                    } else {
+                        bgClass = "bg-[#FDF3DF]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
+                    }
+                } else if (isAlignedReturn) {
+                    arrowIndicator = '<span class="text-[#9E968E] font-extrabold text-xs">←</span>';
+                    if (isFlightDay) {
+                        bgClass = "bg-[#EFE9DB] border-[#9E968E] font-bold";
+                    } else {
+                        bgClass = "bg-[#EFE9DB]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
+                    }
+                } else if (isFlightDay) {
+                    bgClass = "bg-[#FAF6EE] text-[#3E3A36] border-[#EFE9DB]/60 hover:bg-[#EFE9DB]/50";
+                } else {
+                    bgClass = "bg-[#FFFDF9] text-[#9E968E]/60 border-[#EFE9DB]/40";
+                }
+
+                dayCell.className = `h-10 p-1 border rounded transition-all cursor-pointer flex flex-col justify-between ${bgClass} ${textClass}`;
+
+                const dayNumSpan = document.createElement('span');
+                dayNumSpan.className = "text-[10px] font-bold block";
+                dayNumSpan.textContent = day;
+                dayCell.appendChild(dayNumSpan);
+
+                const iconContainer = document.createElement('div');
+                iconContainer.className = "flex justify-between items-center text-[10px] h-3";
+                
+                if (arrowIndicator) {
+                    iconContainer.innerHTML = arrowIndicator;
+                    if (!isFlightDay) {
+                        iconContainer.innerHTML += '<i class="fa-solid fa-triangle-exclamation text-[#C07A7A] text-[8px] ml-0.5"></i>';
+                    }
+                }
+                
+                dayCell.appendChild(iconContainer);
+                daysGrid.appendChild(dayCell);
+            }
+
+            wrapper.appendChild(daysGrid);
+            return wrapper;
+        }
+
+        function handleCalendarCellClick(dateString, isFlightDay, dayNum) {
+            const filterType = document.getElementById('calendar-type-select').value;
+            const targetYear = new Date(dateString).getFullYear();
+            let matchedRecords = [];
+
+            records.forEach(r => {
+                if (filterType !== 'all' && r.promo_category !== filterType) return;
+
+                const alignedDepart = r.depart_date ? getAlignedDate(r.depart_date, targetYear) : null;
+                const alignedReturn = r.return_date ? getAlignedDate(r.return_date, targetYear) : null;
+
+                if (alignedDepart && formatDate(alignedDepart) === dateString) {
+                    matchedRecords.push({ type: 'aligned', direction: '去程', originDate: r.depart_date, data: r });
+                }
+                if (alignedReturn && formatDate(alignedReturn) === dateString) {
+                    matchedRecords.push({ type: 'aligned', direction: '回程', originDate: r.return_date, data: r });
+                }
+            });
+
+            const tempDate = new Date(dateString);
+            showDayDetail(dayNum, tempDate, matchedRecords, isFlightDay);
+        }
+
+        function showDayDetail(day, dateObj, matched, isFlightDay) {
+            const detailBox = document.getElementById('calendar-day-detail');
+            const detailContent = document.getElementById('calendar-day-detail-content');
+            
+            detailBox.classList.remove('hidden');
+
+            const dateStr = formatDate(dateObj);
+            const weekdayName = getWeekdayName(dateStr);
+
+            let html = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b pb-1.5 border-[#EFE9DB]">
+                        <span class="text-xs font-bold text-[#3E3A36]">${dateStr} (${weekdayName})</span>
+                        <span class="text-[9px] ${isFlightDay ? 'bg-[#EFE9DB] text-[#3E3A36]' : 'bg-[#FDF3DF] text-[#C07A7A]'} px-2 py-0.5 rounded font-bold">
+                            ${isFlightDay ? '✓ 虎航有飛航排班' : '✗ 虎航此日無飛航班次'}
+                        </span>
+                    </div>
+            `;
+
+            if (matched.length === 0) {
+                html += `
+                    <p class="text-[#9E968E] italic text-[11px]">當日並無對齊到過往任何促銷歷史，屬於常規一般票價期間。</p>
+                `;
+            } else {
+                html += `<div class="space-y-2">`;
+                matched.forEach(item => {
+                    const originalWd = getWeekdayName(item.originDate);
+                    
+                    let dirArrow = "→ 去程 (歷史促銷)";
+                    let dirBg = "bg-[#FDF3DF]/50 border-[#EAA122]";
+                    if (item.direction === '回程') {
+                        dirArrow = "← 回程 (歷史促銷)";
+                        dirBg = "bg-[#EFE9DB]/60 border-[#9E968E]";
+                    }
+
+                    html += `
+                        <div class="border-l-4 p-2.5 rounded ${dirBg} text-[11px] morandi-shadow">
+                            <div class="font-bold text-[#3E3A36] flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-spin text-[#EAA122]"></i> 星期對齊成功 [ ${dirArrow} ]
+                            </div>
+                            <p class="mt-1 text-[#9E968E]">
+                                投射自歷史日期 <strong>${item.originDate} (${originalWd})</strong>，皆為同月之 <strong>${originalWd}</strong>。
+                            </p>
+                            ${isFlightDay 
+                                ? `<p class="text-[10px] font-bold text-[#3E3A36] mt-1">✓ 經班表校驗：當日有班次，推薦納入重點觀測與搶票清單！</p>` 
+                                : `<p class="text-[10px] font-bold text-[#C07A7A] mt-1">⚠️ 警告：歷史對齊推估有票，但今年此航線在當天（${weekdayName}）並無飛航，請提早或延後至鄰近有航班日。</p>`
+                            }
+                            <div class="mt-1.5 text-[10px] text-[#3E3A36] bg-white/70 p-1.5 rounded font-mono border border-[#EFE9DB]">
+                                歷史票價參考: 去程 NT$${item.data.depart_price || "-"} / 回程 NT$${item.data.return_price || "-"}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+            detailContent.innerHTML = html;
+        }
+
+        function handleRecordSubmit(e) {
+            e.preventDefault();
+
+            // 提取各欄位
+            const departFrom = document.getElementById('record-depart-from').value.toUpperCase().trim();
+            const departTo = document.getElementById('record-depart-to').value.toUpperCase().trim();
+            const departDate = document.getElementById('record-depart-date').value;
+            const departPriceVal = document.getElementById('record-depart-price').value;
+            const departPrice = departPriceVal ? parseInt(departPriceVal) : null;
+
+            const returnFrom = document.getElementById('record-return-from').value.toUpperCase().trim();
+            const returnTo = document.getElementById('record-return-to').value.toUpperCase().trim();
+            const returnDate = document.getElementById('record-return-date').value;
+            const returnPriceVal = document.getElementById('record-return-price').value;
+            const returnPrice = returnPriceVal ? parseInt(returnPriceVal) : null;
+
+            const hasDepart = departFrom && departTo && departDate;
+            const hasReturn = returnFrom && returnTo && returnDate;
+
+            // 只要其中去程或回程有一組填寫完整即可
+            if (!hasDepart && !hasReturn) {
+                showToast("請完整填寫去程資訊（起訖與日期）或回程資訊！", "error");
+                return;
+            }
+
+            const record = {
+                id: 'r_' + Date.now(),
+                source_type: document.querySelector('input[name="source_type"]:checked').value,
+                depart_from: hasDepart ? departFrom : "",
+                depart_to: hasDepart ? departTo : "",
+                return_from: hasReturn ? returnFrom : "",
+                return_to: hasReturn ? returnTo : "",
+                promo_category: document.getElementById('record-promo-category').value,
+                depart_date: hasDepart ? departDate : null,
+                return_date: hasReturn ? returnDate : null,
+                depart_price: hasDepart ? departPrice : null,
+                return_price: hasReturn ? returnPrice : null
+            };
+
+            records.push(record);
+            localStorage.setItem('tiger_records_v5', JSON.stringify(records));
+
+            document.getElementById('record-form').reset();
+            
+            populateRouteDropdowns();
+            updateDashboard();
+            renderRecordsTable();
+            
+            showToast("成功新增一筆歷史促銷紀錄！");
+        }
+
+        function deleteRecord(id) {
+            showConfirm("刪除紀錄", "確定要刪除這筆促銷紀錄嗎？", () => {
+                records = records.filter(r => r.id !== id);
+                localStorage.setItem('tiger_records_v5', JSON.stringify(records));
+                populateRouteDropdowns();
+                updateDashboard();
+                renderRecordsTable();
+                showToast("紀錄已刪除。");
+            });
+        }
+
+        function confirmClearAllRecords() {
+            showConfirm("清空所有紀錄", "確定要清空所有的促銷與觀測紀錄嗎？這項動作將完全清除您的本地資料庫！", () => {
+                records = [];
+                localStorage.setItem('tiger_records_v5', JSON.stringify(records));
+                populateRouteDropdowns();
+                updateDashboard();
+                renderRecordsTable();
+                showToast("已清空所有歷史促銷紀錄。", "info");
+            });
+        }
+
+        function exportDataToJSON() {
+            const backupData = {
+                version: "tigerair_v5",
+                records: records,
+                schedules: schedules
+            };
+            const jsonString = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `tigerair_promo_backup_${formatDate(new Date())}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast("備份檔匯出成功！");
+        }
+
+        function importDataFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && Array.isArray(parsed.records)) {
+                        records = parsed.records;
+                        schedules = parsed.schedules || [];
+                        
+                        localStorage.setItem('tiger_records_v5', JSON.stringify(records));
+                        localStorage.setItem('tiger_schedules_v5', JSON.stringify(schedules));
+                        
+                        populateRouteDropdowns();
+                        updateDashboard();
+                        renderRecordsTable();
+                        renderSchedulesList();
+                        
+                        showToast("資料還原成功！已導入備份紀錄。");
+                    } else {
+                        showToast("備份檔格式不正確，導入失敗。", "error");
+                    }
+                } catch (err) {
+                    showToast("讀取備份檔案發生錯誤。", "error");
+                }
+                event.target.value = "";
+            };
+            reader.readAsText(file);
+        }
+
+        function renderRecordsTable() {
+            const tbody = document.getElementById('records-table-body');
+            const searchInput = document.getElementById('record-search');
+            const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
+            tbody.innerHTML = "";
+
+            const filtered = records.filter(r => {
+                const text = `${r.depart_from} ${r.depart_to} ${r.return_from} ${r.return_to} ${r.promo_category}`.toLowerCase();
+                return text.includes(searchVal);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-[#9E968E] text-xs">目前暫無任何促銷觀測紀錄。您可以點擊右上角載入範例數據。</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-[#FAF6EE]/50 transition border-b border-[#FAF6EE]";
+
+                let promoBadge = "";
+                if (r.promo_category === 'anniversary') {
+                    promoBadge = '<span class="bg-[#FDF3DF] text-[#3E3A36] px-2 py-0.5 rounded text-[10px] font-bold">九月週年慶</span>';
+                } else if (r.promo_category === 'easter') {
+                    promoBadge = '<span class="bg-[#EFE9DB] text-[#3E3A36] px-2 py-0.5 rounded text-[10px] font-bold">春季復活節</span>';
+                } else {
+                    promoBadge = '<span class="bg-[#FAF6EE] text-[#9E968E] px-2 py-0.5 rounded text-[10px] font-bold border border-[#EFE9DB]">其餘促銷</span>';
+                }
+
+                const sourceBadge = r.source_type === 'PTT' 
+                    ? '<span class="text-[9px] text-[#C07A7A] border border-[#C07A7A]/30 px-1 rounded ml-1 bg-[#C07A7A]/10 font-semibold">PTT</span>' 
+                    : '<span class="text-[9px] text-[#9E968E] border border-[#9E968E]/30 px-1 rounded ml-1 bg-[#9E968E]/10 font-semibold">自查</span>';
+
+                const departInfo = r.depart_date ? `
+                    <div class="font-bold text-[#3E3A36]">${r.depart_from} → ${r.depart_to}</div>
+                    <div class="text-[#9E968E] font-mono text-[10px]">${r.depart_date} (${getWeekdayName(r.depart_date)})</div>
+                ` : `<span class="text-[#9E968E] italic text-[10px]">無去程</span>`;
+
+                const returnInfo = r.return_date ? `
+                    <div class="font-bold text-[#3E3A36]">${r.return_from} → ${r.return_to}</div>
+                    <div class="text-[#9E968E] font-mono text-[10px]">${r.return_date} (${getWeekdayName(r.return_date)})</div>
+                ` : `<span class="text-[#9E968E] italic text-[10px]">無回程</span>`;
+
+                const priceInfo = `
+                    <div class="font-mono text-[10px] text-[#9E968E]">去: ${r.depart_price ? 'NT$' + r.depart_price : '-'}</div>
+                    <div class="font-mono text-[10px] text-[#9E968E]">回: ${r.return_price ? 'NT$' + r.return_price : '-'}</div>
+                `;
+
+                tr.innerHTML = `
+                    <td class="p-2.5">
+                        <div class="flex flex-col gap-1 items-start">
+                            ${promoBadge}
+                            ${sourceBadge}
+                        </div>
+                    </td>
+                    <td class="p-2.5">${departInfo}</td>
+                    <td class="p-2.5">${returnInfo}</td>
+                    <td class="p-2.5">${priceInfo}</td>
+                    <td class="p-2.5 text-center">
+                        <button data-delete-record="${r.id}" class="text-[#9E968E] hover:text-[#C07A7A] p-1 rounded transition duration-200">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleScheduleSubmit(e) {
+            e.preventDefault();
+
+            const route = document.getElementById('sched-route').value.toUpperCase().trim();
+            const checkedDays = [];
+            document.querySelectorAll('input[name="sched_days"]:checked').forEach(cb => {
+                checkedDays.push(parseInt(cb.value));
+            });
+
+            if (checkedDays.length === 0) {
+                showToast("請至少點選一個營運星期！", "error");
+                return;
+            }
+
+            const existingIndex = schedules.findIndex(s => s.route === route);
+            if (existingIndex !== -1) {
+                schedules[existingIndex].days = checkedDays;
+            } else {
+                schedules.push({ route, days: checkedDays });
+            }
+
+            localStorage.setItem('tiger_schedules_v5', JSON.stringify(schedules));
+            document.getElementById('schedule-form').reset();
+            
+            populateRouteDropdowns();
+            updateDashboard();
+            renderSchedulesList();
+
+            showToast(`${route} 營運班表已更新！`);
+        }
+
+        function deleteSchedule(route) {
+            showConfirm("刪除航班班表", `確定要刪除 ${route} 的班表設定嗎？（刪除後預設恢復為天天營運）`, () => {
+                schedules = schedules.filter(s => s.route !== route);
+                localStorage.setItem('tiger_schedules_v5', JSON.stringify(schedules));
+                populateRouteDropdowns();
+                updateDashboard();
+                renderSchedulesList();
+                showToast("班表設定已刪除。");
+            });
+        }
+
+        function renderSchedulesList() {
+            const container = document.getElementById('schedules-list');
+            container.innerHTML = "";
+
+            if (schedules.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-[#9E968E] text-xs py-8">目前無自定義排班。預設情況下所有航線將視為「天天營運」。</div>`;
+                return;
+            }
+
+            schedules.forEach(s => {
+                const card = document.createElement('div');
+                card.className = "bg-[#FFFDF9] border border-[#EFE9DB] rounded-lg p-3 flex items-center justify-between shadow-xs text-xs morandi-shadow";
+
+                let daysHtml = "";
+                const order = [1, 2, 3, 4, 5, 6, 0];
+                order.forEach(dayIndex => {
+                    const isActive = s.days.includes(dayIndex);
+                    daysHtml += `<span class="w-5 h-5 inline-flex items-center justify-center text-[9px] font-bold rounded ${
+                        isActive ? 'bg-[#3E3A36] text-white' : 'bg-[#EFE9DB] text-[#9E968E]'
+                    }">${weekDaysChinese[dayIndex]}</span>`;
+                });
+
+                card.innerHTML = `
+                    <div class="space-y-1.5">
+                        <div class="font-bold text-[#3E3A36] flex items-center gap-1.5">
+                            <i class="fa-solid fa-plane text-[#9E968E] text-[10px]"></i> ${s.route}
+                        </div>
+                        <div class="flex gap-1">
+                            ${daysHtml}
+                        </div>
+                    </div>
+                    <button data-delete-schedule="${s.route}" class="text-[#9E968E] hover:text-[#C07A7A] p-1 rounded transition duration-200">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
