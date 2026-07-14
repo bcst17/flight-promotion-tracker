@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>虎航促銷預測系統</title>
     
-    <!-- 支援新增至主畫面之 App 屬性 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="虎航預測">
@@ -103,7 +102,6 @@
                     </div>
                 </div>
                 
-                <!-- 導航分頁 -->
                 <div class="hidden md:flex space-x-2">
                     <button id="nav-dashboard" class="tab-btn px-4 py-2 rounded-md text-xs font-semibold bg-[#EAA122] text-[#3E3A36] shadow-xs transition duration-200">
                         <i class="fa-solid fa-calendar-days mr-1.5"></i> 觀測月曆
@@ -128,7 +126,6 @@
         </div>
     </header>
 
-    <!-- Firebase 連線配置抽屜面板 -->
     <div id="firebase-config-panel" class="bg-[#FFFDF9] border-b border-[#EFE9DB] px-4 py-4 hidden transition-all duration-300">
         <div class="max-w-7xl mx-auto space-y-3">
             <div class="flex items-center justify-between">
@@ -264,7 +261,6 @@
                         </div>
                     </div>
 
-                    <!-- 雙月份並列容器 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="dual-calendars-container">
                         <!-- JS 動態渲染兩個月份 -->
                     </div>
@@ -312,18 +308,21 @@
                             </div>
                         </div>
 
-                        <!-- 航點輸入(可分開去回填寫) -->
                         <div class="space-y-3">
                             <div class="border-l-2 border-[#EAA122] pl-2 space-y-2">
                                 <span class="text-[10px] font-bold text-[#3E3A36]">去程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">出發地代碼</span>
-                                        <input type="text" id="record-depart-from" placeholder="如: TPE" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">出發地</span>
+                                        <select id="record-depart-from" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-bold rounded p-1.5 outline-none focus:bg-white text-[10px] focus:ring-1 focus:ring-[#EAA122]">
+                                            <!-- JS 動態渲染 -->
+                                        </select>
                                     </div>
                                     <div>
-                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">目的地代碼</span>
-                                        <input type="text" id="record-depart-to" placeholder="如: OKA" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">目的地</span>
+                                        <select id="record-depart-to" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-bold rounded p-1.5 outline-none focus:bg-white text-[10px] focus:ring-1 focus:ring-[#EAA122]">
+                                            <!-- JS 動態渲染 -->
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
@@ -342,12 +341,16 @@
                                 <span class="text-[10px] font-bold text-[#3E3A36]">回程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">出發地代碼</span>
-                                        <input type="text" id="record-return-from" placeholder="如: OKA" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">出發地</span>
+                                        <select id="record-return-from" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-bold rounded p-1.5 outline-none focus:bg-white text-[10px] focus:ring-1 focus:ring-[#EAA122]">
+                                            <!-- JS 動態渲染 -->
+                                        </select>
                                     </div>
                                     <div>
-                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">目的地代碼</span>
-                                        <input type="text" id="record-return-to" placeholder="如: TPE" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 font-bold uppercase focus:bg-white focus:ring-1 focus:ring-[#EAA122] outline-none text-[#3E3A36]">
+                                        <span class="text-[9px] text-[#9E968E] block mb-0.5">目的地</span>
+                                        <select id="record-return-to" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] font-bold rounded p-1.5 outline-none focus:bg-white text-[10px] focus:ring-1 focus:ring-[#EAA122]">
+                                            <!-- JS 動態渲染 -->
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
@@ -384,7 +387,6 @@
                     </form>
                 </div>
 
-                <!-- 右側：現有數據清單與備份 -->
                 <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] lg:col-span-2 space-y-5 morandi-shadow">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#FAF6EE]">
                         <h3 class="text-xs font-bold text-[#3E3A36] flex items-center gap-1.5">
@@ -510,7 +512,6 @@
                     </div>
                 </form>
 
-                <!-- 航班設定清單（將依照官方地區分組渲染） -->
                 <div class="space-y-6" id="schedules-list-container">
                     <!-- JS 動態生成按區域分類的卡片群組 -->
                 </div>
@@ -521,7 +522,7 @@
     <!-- 頁尾 -->
     <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-4 border-t border-[#4E4944] mt-auto hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>虎航促銷預測系統 · v5.4</p>
+            <p>虎航促銷預測系統 · v5.5</p>
         </div>
     </footer>
 
@@ -575,7 +576,6 @@
             "KMI": "宮崎",
         };
 
-        // 依據 image_7bec27.png 官方日本地區進行的精確分類定義
         const regions = {
             "okinawa": { name: "沖繩地區", airports: ["OKA", "ISG"] },
             "kyushu": { name: "九州地區", airports: ["HSG", "FUK", "KMI", "OIT"] },
@@ -615,7 +615,6 @@
             return getAirportName(destCode);
         }
 
-        // --- UI 彈窗與 Toast 模組 ---
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -656,7 +655,6 @@
             activeConfirmCallback = onConfirm;
         }
 
-        // --- STREAMING_CHUNK: 系統事件監聽綁定 ---
         document.addEventListener('DOMContentLoaded', function() {
             bindClick('nav-dashboard', () => switchTab('dashboard'));
             bindClick('nav-records', () => switchTab('records'));
@@ -755,9 +753,8 @@
             if (el) el.addEventListener('submit', callback);
         }
 
-        // --- STREAMING_CHUNK: 雲端/本機資料同步，不含任何強制重置覆蓋之硬編碼班表 ---
         async function loadStoredData() {
-            const customZh = localStorage.getItem('tiger_airport_zh_v6');
+            const customZh = localStorage.getItem('tiger_airport_zh_v7');
             if (customZh) {
                 airportZh = { ...airportZh, ...JSON.parse(customZh) };
             }
@@ -783,16 +780,16 @@
                 }
             }
             
-            records = JSON.parse(localStorage.getItem('tiger_records_v6') || '[]');
-            schedules = JSON.parse(localStorage.getItem('tiger_schedules_v6') || '[]');
-            nogoDays = JSON.parse(localStorage.getItem('tiger_nogo_days_v6') || '[]');
+            records = JSON.parse(localStorage.getItem('tiger_records_v7') || '[]');
+            schedules = JSON.parse(localStorage.getItem('tiger_schedules_v7') || '[]');
+            nogoDays = JSON.parse(localStorage.getItem('tiger_nogo_days_v7') || '[]');
         }
 
         function saveToLocalCache() {
-            localStorage.setItem('tiger_records_v6', JSON.stringify(records));
-            localStorage.setItem('tiger_schedules_v6', JSON.stringify(schedules));
-            localStorage.setItem('tiger_nogo_days_v6', JSON.stringify(nogoDays));
-            localStorage.setItem('tiger_airport_zh_v6', JSON.stringify(airportZh));
+            localStorage.setItem('tiger_records_v7', JSON.stringify(records));
+            localStorage.setItem('tiger_schedules_v7', JSON.stringify(schedules));
+            localStorage.setItem('tiger_nogo_days_v7', JSON.stringify(nogoDays));
+            localStorage.setItem('tiger_airport_zh_v7', JSON.stringify(airportZh));
         }
 
         async function syncData() {
@@ -831,7 +828,7 @@
             }
 
             const config = { apiKey, authDomain, projectId, appId };
-            localStorage.setItem('tiger_firebase_config_v6', JSON.stringify(config));
+            localStorage.setItem('tiger_firebase_config_v7', JSON.stringify(config));
             showToast("正在嘗試雲端同步連線...", "info");
             
             await initFirebase(config);
@@ -864,7 +861,6 @@
             }
         }
 
-        // --- STREAMING_CHUNK: 智慧星期與日曆週對位對位演算法 ---
         function getAlignedDate(originalDateStr, targetYear) {
             const orig = new Date(originalDateStr);
             if (isNaN(orig)) return null;
@@ -915,7 +911,7 @@
 
         async function initSystem() {
             let config = builtInFirebaseConfig;
-            const savedConfig = localStorage.getItem('tiger_firebase_config_v6');
+            const savedConfig = localStorage.getItem('tiger_firebase_config_v7');
             if (savedConfig) {
                 config = JSON.parse(savedConfig);
             }
@@ -980,59 +976,104 @@
             return Array.from(dests);
         }
 
-        // --- STREAMING_CHUNK: 建立中文化地區分類下拉選單 ---
         function populateRouteDropdowns() {
             const calendarRouteSelect = document.getElementById('calendar-route-select');
-            if (!calendarRouteSelect) return;
+            if (calendarRouteSelect) {
+                calendarRouteSelect.innerHTML = "";
 
-            calendarRouteSelect.innerHTML = "";
+                // 1. 全部觀測選項
+                const allOption = document.createElement('option');
+                allOption.value = "all";
+                allOption.className = "font-bold text-[#3E3A36] bg-[#FAF6EE]";
+                allOption.textContent = "全部地區";
+                calendarRouteSelect.appendChild(allOption);
 
-            // 1. 全部觀測選項
-            const allOption = document.createElement('option');
-            allOption.value = "all";
-            allOption.className = "font-bold text-[#3E3A36] bg-[#FAF6EE]";
-            allOption.textContent = "全部地區";
-            calendarRouteSelect.appendChild(allOption);
+                // 2. 依照官方地區分類進行扁平式渲染
+                const definedAirports = new Set();
+                for (const [key, region] of Object.entries(regions)) {
+                    const regionOption = document.createElement('option');
+                    regionOption.value = `region_${key}`;
+                    regionOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
+                    regionOption.textContent = `■ ${region.name} - 所有機場`;
+                    calendarRouteSelect.appendChild(regionOption);
 
-            // 2. 依照官方地區分類進行扁平式渲染
-            const definedAirports = new Set();
-            for (const [key, region] of Object.entries(regions)) {
-                
-                const regionOption = document.createElement('option');
-                regionOption.value = `region_${key}`;
-                regionOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
-                regionOption.textContent = `■ ${region.name}`;
-                calendarRouteSelect.appendChild(regionOption);
+                    region.airports.forEach(code => {
+                        definedAirports.add(code);
+                        const option = document.createElement('option');
+                        option.value = code;
+                        option.className = "pl-4 text-[#3E3A36]";
+                        option.textContent = `　${getAirportName(code)} (${code})`;
+                        calendarRouteSelect.appendChild(option);
+                    });
+                }
 
-                region.airports.forEach(code => {
-                    definedAirports.add(code);
-                    const option = document.createElement('option');
-                    option.value = code;
-                    option.className = "pl-4 text-[#3E3A36]";
-                    option.textContent = `　${getAirportName(code)} (${code})`;
-                    calendarRouteSelect.appendChild(option);
-                });
+                // 3. 其他自定義航點
+                const uniqueDests = getUniqueDestinations();
+                const otherAirports = uniqueDests.filter(code => !definedAirports.has(code));
+
+                if (otherAirports.length > 0) {
+                    const otherTitleOption = document.createElement('option');
+                    otherTitleOption.value = "region_others";
+                    otherTitleOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
+                    otherTitleOption.textContent = `■ 其他地區 - 所有機場`;
+                    calendarRouteSelect.appendChild(otherTitleOption);
+                    
+                    otherAirports.forEach(code => {
+                        const option = document.createElement('option');
+                        option.value = code;
+                        option.className = "pl-4 text-[#3E3A36]";
+                        option.textContent = `　${getAirportName(code)} (${code})`;
+                        calendarRouteSelect.appendChild(option);
+                    });
+                }
             }
 
-            // 3. 其他自定義但未在預設地區中的航點
-            const uniqueDests = getUniqueDestinations();
-            const otherAirports = uniqueDests.filter(code => !definedAirports.has(code));
+            const formSelectIds = ['record-depart-from', 'record-depart-to', 'record-return-from', 'record-return-to'];
+            formSelectIds.forEach(id => {
+                const selectEl = document.getElementById(id);
+                if (!selectEl) return;
 
-            if (otherAirports.length > 0) {
-                const otherTitleOption = document.createElement('option');
-                otherTitleOption.value = "region_others";
-                otherTitleOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
-                otherTitleOption.textContent = `■ 其他地區`;
-                calendarRouteSelect.appendChild(otherTitleOption);
+                selectEl.innerHTML = "";
                 
-                otherAirports.forEach(code => {
-                    const option = document.createElement('option');
-                    option.value = code;
-                    option.className = "pl-4 text-[#3E3A36]";
-                    option.textContent = `　${getAirportName(code)} (${code})`;
-                    calendarRouteSelect.appendChild(option);
+                // 預設請選擇
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = "";
+                defaultOpt.textContent = "請選擇...";
+                selectEl.appendChild(defaultOpt);
+
+                // 1. 台灣地區 (起降母港)
+                const twHeader = document.createElement('option');
+                twHeader.disabled = true;
+                twHeader.className = "font-bold bg-[#EFE9DB] text-[#3E3A36]";
+                twHeader.textContent = "■ 台灣地區";
+                selectEl.appendChild(twHeader);
+
+                const twAirports = ["TPE", "KHH", "TXG"];
+                twAirports.forEach(code => {
+                    const opt = document.createElement('option');
+                    opt.value = code;
+                    opt.className = "pl-2";
+                    opt.textContent = `　${getAirportName(code)} (${code})`;
+                    selectEl.appendChild(opt);
                 });
-            }
+
+                // 2. 日本官方各區
+                for (const [key, region] of Object.entries(regions)) {
+                    const regHeader = document.createElement('option');
+                    regHeader.disabled = true;
+                    regHeader.className = "font-bold bg-[#EFE9DB] text-[#3E3A36]";
+                    regHeader.textContent = `■ ${region.name}`;
+                    selectEl.appendChild(regHeader);
+
+                    region.airports.forEach(code => {
+                        const opt = document.createElement('option');
+                        opt.value = code;
+                        opt.className = "pl-2";
+                        opt.textContent = `　${getAirportName(code)} (${code})`;
+                        selectEl.appendChild(opt);
+                    });
+                }
+            });
         }
 
         function changeMonth(dir) {
@@ -1143,7 +1184,6 @@
                    r.return_from === selectedValue;
         }
 
-        // --- STREAMING_CHUNK: 雙月份並列月曆渲染 ---
         function renderDualCalendars() {
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
             
@@ -1302,7 +1342,6 @@
             return wrapper;
         }
 
-        // --- STREAMING_CHUNK: 月曆單格點擊詳情 ---
         function handleCalendarCellClick(dateString, isFlightDay, dayNum) {
             const filterType = document.getElementById('calendar-type-select').value;
             const targetYear = new Date(dateString).getFullYear();
@@ -1380,7 +1419,7 @@
 
                     html += `
                         <div class="border-l-4 p-2.5 rounded ${dirBg} text-[11px] morandi-shadow">
-                            <div class="font-bold text-[#3E3A36] flex items-center gap-1">
+                            <div class="font-bold text-[#3E3A36] flex items-center gap-1.5 flex-wrap">
                                 <i class="fa-solid fa-arrows-spin text-[#EAA122]"></i> 
                                 [ ${targetAirportName} ] ${dirArrow} 資訊
                             </div>
@@ -1433,18 +1472,17 @@
             handleCalendarCellClick(dateStr, isFlightDay, tempDate.getDate());
         }
 
-        // --- STREAMING_CHUNK: 觀測紀錄處理與保留欄位機制 ---
         async function handleRecordSubmit(e) {
             e.preventDefault();
 
-            const departFrom = document.getElementById('record-depart-from').value.toUpperCase().trim();
-            const departTo = document.getElementById('record-depart-to').value.toUpperCase().trim();
+            const departFrom = document.getElementById('record-depart-from').value;
+            const departTo = document.getElementById('record-depart-to').value;
             const departDate = document.getElementById('record-depart-date').value;
             const departPriceVal = document.getElementById('record-depart-price').value;
             const departPrice = departPriceVal ? parseInt(departPriceVal) : null;
 
-            const returnFrom = document.getElementById('record-return-from').value.toUpperCase().trim();
-            const returnTo = document.getElementById('record-return-to').value.toUpperCase().trim();
+            const returnFrom = document.getElementById('record-return-from').value;
+            const returnTo = document.getElementById('record-return-to').value;
             const returnDate = document.getElementById('record-return-date').value;
             const returnPriceVal = document.getElementById('record-return-price').value;
             const returnPrice = returnPriceVal ? parseInt(returnPriceVal) : null;
@@ -1453,7 +1491,7 @@
             const hasReturn = returnFrom && returnTo && returnDate;
 
             if (!hasDepart && !hasReturn) {
-                showToast("請完整填寫去程資訊或回程資訊！", "error");
+                showToast("請選擇出發地與目的地，並填寫歷史日期！", "error");
                 return;
             }
 
@@ -1474,7 +1512,7 @@
             records.push(record);
             await syncData();
 
-            // 僅清除日期與金額，保留原本輸入之航線與分類以利連續輸入
+            // 僅清除日期與金額，保留原本輸入之航線與分類以利連續輸入同一航點之歷史低價
             document.getElementById('record-depart-date').value = '';
             document.getElementById('record-depart-price').value = '';
             document.getElementById('record-return-date').value = '';
@@ -1511,7 +1549,7 @@
 
         function exportDataToJSON() {
             const backupData = {
-                version: "tigerair_v6",
+                version: "tigerair_v7",
                 records: records,
                 schedules: schedules,
                 nogoDays: nogoDays,
@@ -1565,7 +1603,6 @@
             reader.readAsText(file);
         }
 
-        // --- STREAMING_CHUNK: 渲染與生成紀錄列表與卡片視圖 ---
         function renderRecordsTable() {
             const tbody = document.getElementById('records-table-body');
             const mobileList = document.getElementById('records-mobile-list');
@@ -1687,7 +1724,6 @@
             });
         }
 
-        // --- STREAMING_CHUNK: 航線班表與地名自定義對照業務邏輯 ---
         async function handleScheduleSubmit(e) {
             e.preventDefault();
 
@@ -1762,7 +1798,6 @@
             document.getElementById('schedule-form').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 一鍵幫尚未設定營運星期的航點帶入預設新增設定
         function startCreateScheduleForAirport(airportCode) {
             editingRoute = null;
             resetScheduleForm();
@@ -1806,14 +1841,12 @@
             });
         }
 
-        // --- STREAMING_CHUNK: 按官方地區分類動態渲染排班卡片，包含預設未設定班表的卡片佔位 ---
         function renderSchedulesList() {
             const container = document.getElementById('schedules-list-container');
             container.innerHTML = "";
 
             // 1. 先為 7 大官方分類進行排程分組渲染
             for (const [regKey, region] of Object.entries(regions)) {
-                
                 const groupWrapper = document.createElement('div');
                 groupWrapper.className = "space-y-2";
 
@@ -1825,7 +1858,7 @@
                 const cardsGrid = document.createElement('div');
                 cardsGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
 
-                // 動態遍歷該地區所有的官方設定航點
+                // 動態遍歷該地區所有的官方設定航點 (不含 KMJ 熊本)
                 region.airports.forEach(airportCode => {
                     const matchedSched = schedules.find(s => {
                         const dest = getDestinationFromRoute(s.route);
@@ -1835,7 +1868,6 @@
                     const card = document.createElement('div');
                     
                     if (matchedSched) {
-                        // 已經在 Firebase/本地 設定並儲存了班表
                         card.className = "bg-[#FFFDF9] border border-[#EFE9DB] rounded-lg p-3 flex items-center justify-between shadow-xs text-xs morandi-shadow";
 
                         let daysHtml = "";
@@ -1867,7 +1899,7 @@
                             </div>
                         `;
                     } else {
-                        // 尚未設定班表，以低飽和灰階優雅呈現 "未啟用" 狀態
+                        // 尚未設定班表
                         card.className = "bg-[#FFFDF9]/60 border border-[#EFE9DB]/50 border-dashed rounded-lg p-3 flex items-center justify-between text-xs";
                         card.innerHTML = `
                             <div class="space-y-1">
@@ -1875,7 +1907,7 @@
                                     <i class="fa-solid fa-plane-slash text-[#9E968E]/50 text-[10px]"></i> 
                                     <span>${getAirportName(airportCode)} (${airportCode})</span>
                                 </div>
-                                <div class="text-[10px] text-[#9E968E] italic">未啟用 (暫停飛航或未設定)</div>
+                                <div class="text-[10px] text-[#9E968E] italic">未啟用 (請點擊設定)</div>
                             </div>
                             <button data-create-schedule="${airportCode}" class="bg-[#3E3A36] hover:bg-[#EAA122] hover:text-[#3E3A36] text-white font-bold px-2 py-1.5 rounded transition duration-200 text-[10px] flex items-center gap-1 shrink-0">
                                 <i class="fa-solid fa-plus-circle"></i> 設定 / 啟用
@@ -1889,7 +1921,7 @@
                 container.appendChild(groupWrapper);
             }
 
-            // 2. 處理不屬於任何七大分類但使用者手動自定義的其他航點
+            // 2. 處理其他自定義地區
             const definedAirports = new Set();
             for (const r of Object.values(regions)) {
                 r.airports.forEach(a => definedAirports.add(a));
