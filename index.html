@@ -521,7 +521,7 @@
     <!-- 頁尾 -->
     <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-4 border-t border-[#4E4944] mt-auto hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>虎航促銷預測系統 · v5.3</p>
+            <p>虎航促銷預測系統 · v5.4</p>
         </div>
     </footer>
 
@@ -991,7 +991,7 @@
             const allOption = document.createElement('option');
             allOption.value = "all";
             allOption.className = "font-bold text-[#3E3A36] bg-[#FAF6EE]";
-            allOption.textContent = "全部地區與";
+            allOption.textContent = "全部地區";
             calendarRouteSelect.appendChild(allOption);
 
             // 2. 依照官方地區分類進行扁平式渲染
@@ -1001,7 +1001,7 @@
                 const regionOption = document.createElement('option');
                 regionOption.value = `region_${key}`;
                 regionOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
-                regionOption.textContent = `■ ${region.name} - 所有機場`;
+                regionOption.textContent = `■ ${region.name}`;
                 calendarRouteSelect.appendChild(regionOption);
 
                 region.airports.forEach(code => {
@@ -1022,7 +1022,7 @@
                 const otherTitleOption = document.createElement('option');
                 otherTitleOption.value = "region_others";
                 otherTitleOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
-                otherTitleOption.textContent = `■ 其他地區 - 所有機場`;
+                otherTitleOption.textContent = `■ 其他地區`;
                 calendarRouteSelect.appendChild(otherTitleOption);
                 
                 otherAirports.forEach(code => {
