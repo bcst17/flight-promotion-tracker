@@ -535,7 +535,7 @@
     <!-- 頁尾 -->
     <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-4 border-t border-[#4E4944] mt-auto hidden md:block">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>虎航促銷預測系統 · v5.7</p>
+            <p>虎航促銷預測系統 · v5.8</p>
         </div>
     </footer>
 
@@ -611,7 +611,7 @@
             if (!routeStr) return "";
             const parts = routeStr.split('-');
             if (parts.length === 2) {
-                const taiwanAirports = ["TPE", "KHH", "TXG"];
+                const taiwanAirports = ["TPE"];
                 if (taiwanAirports.includes(parts[0])) {
                     return parts[1];
                 } else if (taiwanAirports.includes(parts[1])) {
@@ -975,7 +975,7 @@
         }
 
         function getUniqueDestinations() {
-            const taiwanAirports = ["TPE", "KHH", "TXG"];
+            const taiwanAirports = ["TPE"];
             const dests = new Set();
             
             schedules.forEach(s => {
@@ -1013,7 +1013,7 @@
                     const regionOption = document.createElement('option');
                     regionOption.value = `region_${key}`;
                     regionOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
-                    regionOption.textContent = `■ ${region.name} - 所有機場`;
+                    regionOption.textContent = `■ ${region.name}`;
                     calendarRouteSelect.appendChild(regionOption);
 
                     region.airports.forEach(code => {
@@ -1034,7 +1034,7 @@
                     const otherTitleOption = document.createElement('option');
                     otherTitleOption.value = "region_others";
                     otherTitleOption.className = "font-bold bg-[#EFE9DB] text-[#3E3A36] py-1";
-                    otherTitleOption.textContent = `■ 其他地區 - 所有機場`;
+                    otherTitleOption.textContent = `■ 其他地區`;
                     calendarRouteSelect.appendChild(otherTitleOption);
                     
                     otherAirports.forEach(code => {
@@ -1064,10 +1064,10 @@
                 const twHeader = document.createElement('option');
                 twHeader.disabled = true;
                 twHeader.className = "font-bold bg-[#EFE9DB] text-[#3E3A36]";
-                twHeader.textContent = "■ 台灣地區";
+                twHeader.textContent = "■ 台灣";
                 selectEl.appendChild(twHeader);
 
-                const twAirports = ["TPE", "KHH", "TXG"];
+                const twAirports = ["TPE"];
                 twAirports.forEach(code => {
                     const opt = document.createElement('option');
                     opt.value = code;
