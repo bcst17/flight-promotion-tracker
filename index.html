@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統</title>
+    <title>虎航促銷預測系統 v6.0</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -29,6 +29,8 @@
             --tiger-gray-bg: #EFE9DB;      /* 灰白 */
             --tiger-red-muted: #C07A7A;    /* 莫蘭迪紅 */
             --tiger-red-light: #FDF2F2;    /* 淺粉紅 */
+            --tiger-blue: #3E78B2;         /* 莫蘭迪回程藍 */
+            --tiger-blue-light: #EEF4FA;   /* 淺回程藍 */
         }
 
         body {
@@ -70,12 +72,12 @@
            您可以在下方直接修改 height 的數值以調整欄位高度。
            ========================================== */
         .custom-date-input {
-            height: 16px;      /* 預設高度為 38px，可依您的需求彈性調整 */
+            height: 16px;      /* 預設高度為 16px，可依您的需求彈性調整 */
             padding: 0.375rem; /* 保持精緻適中的上下內襯距 */
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col pb-16 md:pb-0">
+<body class="min-h-screen flex flex-col pb-20 md:pb-0">
 
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
@@ -106,7 +108,7 @@
                     </div>
                     <div>
                         <h1 class="text-xs sm:text-sm font-bold tracking-wider text-[#FDF3DF]">
-                            虎航促銷預測系統
+                            虎航促銷預測系統 <span class="text-[9px] bg-[#EAA122]/20 text-[#EAA122] px-1.5 py-0.5 rounded ml-1 font-mono">v6.0</span>
                         </h1>
                     </div>
                 </div>
@@ -238,19 +240,19 @@
                         <div class="space-y-2 font-medium">
                             <div class="flex items-center gap-2">
                                 <span class="w-6 text-center text-[#EAA122] font-extrabold text-sm">→</span>
-                                <span class="text-[#9E968E]">去程預估日</span>
+                                <span class="text-[#EAA122]">去程預估日</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-[#9E968E] font-extrabold text-sm">←</span>
-                                <span class="text-[#9E968E]">回程預估日</span>
+                                <span class="w-6 text-center text-[#3E78B2] font-extrabold text-sm">←</span>
+                                <span class="text-[#3E78B2] font-bold">回程預估日</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-[#3E3A36] font-extrabold text-sm">⇆</span>
-                                <span class="text-[#9E968E]">去回程重合預估日</span>
+                                <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#EAA122] to-[#3E78B2] font-extrabold text-sm">⇆</span>
+                                <span class="text-[#3E3A36] font-bold">去回程雙向預估日</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="w-6 h-3 rounded nogo-pattern inline-block border"></span>
-                                <span class="text-[#9E968E]">標記無法出國日期</span>
+                                <span class="text-[#C07A7A]">標記無法出國日期</span>
                             </div>
                         </div>
                     </div>
@@ -296,9 +298,9 @@
         <div id="tab-records" class="tab-content hidden space-y-5">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 
-                <!-- 左側：新增紀錄表單 -->
-                <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] space-y-4 morandi-shadow">
-                    <h3 class="text-xs font-bold text-[#3E3A36] border-b border-[#EFE9DB] pb-2 flex items-center gap-1.5">
+                <!-- 左側：新增/編輯 紀錄表單 -->
+                <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] space-y-4 morandi-shadow h-fit">
+                    <h3 class="text-xs font-bold text-[#3E3A36] border-b border-[#EFE9DB] pb-2 flex items-center gap-1.5" id="form-title-text">
                         <i class="fa-solid fa-plus text-[#EAA122]"></i> 新增促銷 / 查價紀錄
                     </h3>
                     
@@ -337,18 +339,16 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <span class="text-[9px] text-[#9E968E] block mb-0.5">歷史日期</span>
-                                        <!-- 已套用 .custom-date-input，方便您直接從程式碼調高度 -->
                                         <input type="date" id="record-depart-date" class="custom-date-input w-[92%] bg-[#FAF6EE] border border-[#EFE9DB] rounded font-semibold outline-none text-[#3E3A36]">
                                     </div>
                                     <div>
                                         <span class="text-[9px] text-[#9E968E] block mb-0.5">未稅票價</span>
-                                        <!-- 已加入 inputmode="numeric" 與 pattern="[0-9]*" 屬性 -->
                                         <input type="number" id="record-depart-price" inputmode="numeric" pattern="[0-9]*" placeholder="如: 1599" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 outline-none focus:bg-white text-[#3E3A36]">
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="border-l-2 border-[#9E968E] pl-2 space-y-2">
+                            <div class="border-l-2 border-[#3E78B2] pl-2 space-y-2">
                                 <span class="text-[10px] font-bold text-[#3E3A36]">回程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
@@ -367,12 +367,10 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <span class="text-[9px] text-[#9E968E] block mb-0.5">歷史日期</span>
-                                        <!-- 已套用 .custom-date-input，方便您直接從程式碼調高度 -->
                                         <input type="date" id="record-return-date" class="custom-date-input w-[92%] bg-[#FAF6EE] border border-[#EFE9DB] rounded font-semibold outline-none text-[#3E3A36]">
                                     </div>
                                     <div>
                                         <span class="text-[9px] text-[#9E968E] block mb-0.5">未稅票價</span>
-                                        <!-- 已加入 inputmode="numeric" 與 pattern="[0-9]*" 屬性 -->
                                         <input type="number" id="record-return-price" inputmode="numeric" pattern="[0-9]*" placeholder="如: 1899" class="w-full bg-[#FAF6EE] border border-[#EFE9DB] rounded p-1.5 outline-none focus:bg-white text-[#3E3A36]">
                                     </div>
                                 </div>
@@ -394,64 +392,48 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-[#3E3A36] hover:bg-[#2C2926] text-white font-bold p-2.5 rounded-lg shadow-xs transition duration-200 flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-floppy-disk"></i> 儲存紀錄
-                        </button>
+                        <!-- 按鈕操作區 -->
+                        <div class="flex flex-col gap-2">
+                            <button type="submit" id="btn-submit-record" class="w-full bg-[#3E3A36] hover:bg-[#2C2926] text-white font-bold p-2.5 rounded-lg shadow-xs transition duration-200 flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-floppy-disk"></i> <span id="btn-submit-record-text">儲存紀錄</span>
+                            </button>
+                            <button type="button" id="btn-cancel-edit-record" class="w-full bg-[#9E968E] hover:bg-[#857D76] text-white font-bold p-2.5 rounded-lg shadow-xs transition duration-200 hidden">
+                                取消修改
+                            </button>
+                        </div>
                     </form>
                 </div>
 
+                <!-- 右側歷史列表（帶極簡圖標工具列與摺疊、搜尋內建X） -->
                 <div class="bg-[#FFFDF9] rounded-xl shadow-xs p-4 border border-[#EFE9DB] lg:col-span-2 space-y-5 morandi-shadow">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#FAF6EE]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#FAF6EE]">
                         <h3 class="text-xs font-bold text-[#3E3A36] flex items-center gap-1.5">
                             <i class="fa-solid fa-folder-open text-[#9E968E]"></i> 歷史促銷紀錄清單
                         </h3>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <input type="text" id="record-search" placeholder="搜尋城市或代碼..." class="border border-[#EFE9DB] rounded px-2 py-1 text-xs outline-none focus:border-[#EAA122] max-w-[150px] bg-[#FAF6EE] text-[#3E3A36]">
-                            <button id="btn-clear-all" class="bg-[#FDF3DF] hover:bg-[#F3E7CE] text-[#C07A7A] text-[10px] px-2 py-1 rounded border border-[#EFE9DB] transition duration-200 font-semibold">
-                                清空全部
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 資料備份與還原功能 -->
-                    <div class="bg-[#FAF6EE] rounded-lg p-3 border border-[#EFE9DB] flex flex-wrap items-center justify-between gap-3 text-xs">
-                        <div class="space-y-0.5">
-                            <p class="font-bold text-[#3E3A36] flex items-center gap-1">
-                                <i class="fa-solid fa-database text-[#EAA122]"></i> 資料本地永久備份機制
-                            </p>
-                        </div>
                         <div class="flex items-center gap-2">
-                            <button id="btn-export" class="bg-white hover:bg-[#FAF6EE] border border-[#EFE9DB] text-[#3E3A36] text-[10px] px-2.5 py-1.5 rounded transition duration-200 font-bold flex items-center gap-1">
-                                <i class="fa-solid fa-download"></i> 導出 JSON 備份
+                            <!-- 一鍵折疊/展開全部按鈕 (已簡化為 icon 按鈕) -->
+                            <button id="btn-collapse-all" class="bg-[#FAF6EE] hover:bg-[#EFE9DB] text-[#3E3A36] p-2 rounded-lg border border-[#EFE9DB] transition duration-200 flex items-center justify-center text-xs w-8 h-8 shrink-0" title="一鍵折疊/展開所有分組">
+                                <i id="btn-collapse-all-icon" class="fa-solid fa-compress"></i>
                             </button>
-                            <label class="bg-[#3E3A36] hover:bg-[#2C2926] text-white text-[10px] px-2.5 py-1.5 rounded transition duration-200 font-bold flex items-center gap-1 cursor-pointer">
-                                <i class="fa-solid fa-upload"></i> 導入備份檔
-                                <input type="file" id="import-file-input" class="hidden" accept=".json">
-                            </label>
+                            
+                            <!-- 篩選/分組模式切換按鈕 (已簡化為單一循環 icon 按鈕) -->
+                            <button id="btn-group-cycle" class="bg-[#FAF6EE] hover:bg-[#EFE9DB] text-[#3E3A36] p-2 rounded-lg border border-[#EFE9DB] transition duration-200 flex items-center justify-center text-xs w-8 h-8 shrink-0" title="切換分組模式">
+                                <i id="btn-group-cycle-icon" class="fa-solid fa-map-location-dot"></i>
+                            </button>
+                            
+                            <!-- 整合搜尋與清空功能 (內嵌 X 刪除按鈕) -->
+                            <div class="relative flex items-center max-w-[160px] sm:max-w-[180px] w-full">
+                                <input type="text" id="record-search" placeholder="搜尋城市或代碼..." class="w-full border border-[#EFE9DB] rounded-lg pl-2 pr-7 py-1.5 text-xs outline-none focus:border-[#EAA122] bg-[#FAF6EE] text-[#3E3A36]">
+                                <button id="btn-clear-all" class="absolute right-2 text-[#C07A7A] hover:text-[#A96363] text-xs font-bold transition duration-200" title="清空全部歷史紀錄">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 桌機版顯示表格 -->
-                    <div class="hidden md:block overflow-x-auto">
-                        <table class="w-full text-xs text-left border-collapse">
-                            <thead>
-                                <tr class="bg-[#FAF6EE] text-[#9E968E] border-b border-[#EFE9DB] font-semibold text-[11px]">
-                                    <th class="p-2.5">分類與來源</th>
-                                    <th class="p-2.5">去程航線 / 歷史對齊 (星期)</th>
-                                    <th class="p-2.5">回程航線 / 歷史對齊 (星期)</th>
-                                    <th class="p-2.5">未稅票價 (單程)</th>
-                                    <th class="p-2.5 text-center">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="records-table-body" class="divide-y divide-[#FAF6EE]">
-                                <!-- JS 動態渲染 -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- 手機版顯示卡片式列表 -->
-                    <div id="records-mobile-list" class="block md:hidden space-y-3">
-                        <!-- JS 動態渲染手機版卡片 -->
+                    <!-- 歷史促銷分組動態渲染容器 -->
+                    <div id="records-grouped-container" class="space-y-4">
+                        <!-- JS 動態渲染分組與內容 -->
                     </div>
                 </div>
             </div>
@@ -532,10 +514,11 @@
         </div>
     </main>
 
-    <!-- 頁尾 -->
-    <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-4 border-t border-[#4E4944] mt-auto hidden md:block">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p>虎航促銷預測系統 · v5.8</p>
+    <!-- 頁尾 (行動裝置優化：增加 pb-24 保證在手機上完全不被遮擋) -->
+    <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-6 border-t border-[#4E4944] mt-auto pb-24 md:pb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-1">
+            <p class="font-semibold text-stone-300">虎航促銷預測系統 · v6.0</p>
+            <p class="text-[9px] text-stone-500">本系統與台灣虎航官方無關，預測數據僅供旅日機票規劃參考</p>
         </div>
     </footer>
 
@@ -547,10 +530,13 @@
         let records = [];
         let schedules = [];
         let nogoDays = []; // 儲存無法出國日 ['YYYY-MM-DD', ...]
+        let collapsedGroups = {}; // 儲存歷史紀錄摺疊狀態 { groupKey: true/false }
+        let currentGroupMode = 'city'; // 儲存歷史紀錄分組模式，選項: 'city', 'category', 'none'
         let currentYear = new Date().getFullYear() + 1; // 自動指向下一年度作為預設目標年份 (如 2027)
         let currentMonth = 4;   // 0-indexed, 4 = 5月 (預設連續顯示5-6月)
         let activeConfirmCallback = null;
-        let editingRoute = null; // 當前正在編輯的航線
+        let editingRoute = null; // 當前正在編輯的排班航線
+        let editingRecordId = null; // 當前正在編輯的促銷紀錄 ID
 
         // Firebase 雲端狀態 (已寫入您專屬的同步專案金鑰)
         const builtInFirebaseConfig = {
@@ -563,7 +549,7 @@
         let db = null;
         let isFirebaseConnected = false;
 
-        // 內建機場城市中文字典 (符合最新官方日本直航地圖)
+        // 內建機場城市中文字典
         let airportZh = {
             "TPE": "台北桃園",
             "CTS": "札幌",
@@ -628,7 +614,7 @@
             return getAirportName(destCode);
         }
 
-        // 格式化價格為含千位分隔符的字串（解決第三點要求：各分頁數字相關，都以千位分隔符號呈現）
+        // 格式化價格
         function formatPrice(val) {
             if (val === null || val === undefined || val === '') return "-";
             return Number(val).toLocaleString('zh-TW');
@@ -644,8 +630,8 @@
                 bgClass = "bg-[#C07A7A] text-white border-[#EFE9DB]";
                 iconClass = "fa-triangle-exclamation text-[#FFFDF9]";
             } else if (type === 'info') {
-                bgClass = "bg-[#9E968E] text-white border-[#EFE9DB]";
-                iconClass = "fa-circle-info text-[#FDF3DF]";
+                bgClass = "bg-[#3E3A36] text-white border-[#EFE9DB]";
+                iconClass = "fa-circle-info text-[#EAA122]";
             }
 
             toast.className = `${bgClass} flex items-center gap-2 px-3.5 py-2.5 rounded-lg shadow-md border text-[11px] font-semibold transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto max-w-xs`;
@@ -686,12 +672,14 @@
             bindClick('btn-prev-month', () => changeMonth(-1));
             bindClick('btn-next-month', () => changeMonth(1));
             bindClick('btn-clear-all', confirmClearAllRecords);
-            bindClick('btn-export', exportDataToJSON);
             
             bindClick('btn-toggle-firebase', toggleFirebasePanel);
             bindClick('btn-close-firebase', toggleFirebasePanel);
             bindClick('btn-save-firebase', saveFirebaseConfig);
             bindClick('btn-cancel-edit-sched', cancelEditSchedule);
+            bindClick('btn-cancel-edit-record', cancelEditRecord);
+            bindClick('btn-collapse-all', toggleAllCollapse);
+            bindClick('btn-group-cycle', toggleGroupMode);
 
             bindClick('confirm-cancel', () => {
                 document.getElementById('confirm-modal').classList.add('hidden');
@@ -710,16 +698,27 @@
             bindFormSubmit('record-form', handleRecordSubmit);
             bindFormSubmit('schedule-form', handleScheduleSubmit);
 
-            bindEvent('import-file-input', 'change', importDataFromJSON);
-
-            // 事件委派
-            document.getElementById('records-table-body').addEventListener('click', function(e) {
-                const deleteBtn = e.target.closest('[data-delete-record]');
-                if (deleteBtn) {
-                    const recordId = deleteBtn.getAttribute('data-delete-record');
-                    deleteRecord(recordId);
-                }
-            });
+            // 分組容器事件監聽 (統合處理展開/摺疊、編輯、刪除)
+            const groupedContainer = document.getElementById('records-grouped-container');
+            if (groupedContainer) {
+                groupedContainer.addEventListener('click', function(e) {
+                    const toggleHeader = e.target.closest('[data-toggle-group]');
+                    const deleteBtn = e.target.closest('[data-delete-record]');
+                    const editBtn = e.target.closest('[data-edit-record]');
+                    
+                    if (toggleHeader) {
+                        const groupKey = toggleHeader.getAttribute('data-toggle-group');
+                        collapsedGroups[groupKey] = !collapsedGroups[groupKey];
+                        renderRecordsTable();
+                    } else if (deleteBtn) {
+                        const recordId = deleteBtn.getAttribute('data-delete-record');
+                        deleteRecord(recordId);
+                    } else if (editBtn) {
+                        const recordId = editBtn.getAttribute('data-edit-record');
+                        startEditRecord(recordId);
+                    }
+                });
+            }
 
             document.getElementById('schedules-list-container').addEventListener('click', function(e) {
                 const deleteBtn = e.target.closest('[data-delete-schedule]');
@@ -759,6 +758,7 @@
             initSystem();
         });
 
+        function id(elId) { return document.getElementById(elId); }
         function bindClick(id, callback) {
             const el = document.getElementById(id);
             if (el) el.addEventListener('click', callback);
@@ -795,7 +795,7 @@
                     }
                 } catch (error) {
                     console.error("Firebase 讀取失敗:", error);
-                    showToast("Firebase 同步讀取失敗，採用本機儲存與緩存模式", "error");
+                    showToast("Firebase 同步讀取失敗，採用本機儲存模式", "error");
                 }
             }
             
@@ -887,7 +887,6 @@
             const origMonth = orig.getMonth();
             const origYear = orig.getFullYear();
 
-            // 取得當月第一個包含星期一的基準點
             function getFirstWeekStartMonday(year, month) {
                 const firstDay = new Date(year, month, 1);
                 const firstDayWeekday = firstDay.getDay(); 
@@ -945,6 +944,7 @@
             
             populateRouteDropdowns();
             updateDashboard();
+            updateGroupCycleButtonUI();
             renderRecordsTable();
             renderSchedulesList();
         }
@@ -1000,14 +1000,12 @@
             if (calendarRouteSelect) {
                 calendarRouteSelect.innerHTML = "";
 
-                // 1. 全部觀測選項
                 const allOption = document.createElement('option');
                 allOption.value = "all";
                 allOption.className = "font-bold text-[#3E3A36] bg-[#FAF6EE]";
                 allOption.textContent = "全部地區";
                 calendarRouteSelect.appendChild(allOption);
 
-                // 2. 依照官方地區分類進行扁平式渲染
                 const definedAirports = new Set();
                 for (const [key, region] of Object.entries(regions)) {
                     const regionOption = document.createElement('option');
@@ -1026,7 +1024,6 @@
                     });
                 }
 
-                // 3. 其他自定義航點
                 const uniqueDests = getUniqueDestinations();
                 const otherAirports = uniqueDests.filter(code => !definedAirports.has(code));
 
@@ -1054,13 +1051,11 @@
 
                 selectEl.innerHTML = "";
                 
-                // 預設請選擇
                 const defaultOpt = document.createElement('option');
                 defaultOpt.value = "";
                 defaultOpt.textContent = "請選擇...";
                 selectEl.appendChild(defaultOpt);
 
-                // 1. 台灣地區 (起降母港)
                 const twHeader = document.createElement('option');
                 twHeader.disabled = true;
                 twHeader.className = "font-bold bg-[#EFE9DB] text-[#3E3A36]";
@@ -1076,7 +1071,6 @@
                     selectEl.appendChild(opt);
                 });
 
-                // 2. 日本官方各區
                 for (const [key, region] of Object.entries(regions)) {
                     const regHeader = document.createElement('option');
                     regHeader.disabled = true;
@@ -1112,7 +1106,6 @@
             renderDualCalendars();
         }
 
-        // 檢查特定航點是否在特定星期有航班
         function isAirportFlightDay(airportCode, weekday) {
             const sched = schedules.find(s => s.route.includes(airportCode));
             return sched ? sched.days.includes(weekday) : true;
@@ -1154,7 +1147,6 @@
                 });
                 return Array.from(days);
             }
-            // 單一航點
             const sched = schedules.find(s => s.route.includes(selectedValue));
             return sched ? sched.days : [0, 1, 2, 3, 4, 5, 6]; 
         }
@@ -1307,9 +1299,9 @@
                 if (isNogo) {
                     bgClass = "nogo-pattern text-[#C07A7A]";
                 } else if (isAlignedDepart && isAlignedReturn) {
-                    arrowIndicator = '<span class="text-[#3E3A36] font-bold text-xs">⇆</span>';
+                    arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#EAA122] to-[#3E78B2] font-extrabold text-xs">⇆</span>';
                     if (isDepartFlightDay && isReturnFlightDay) {
-                        bgClass = "bg-[#FDF3DF] border-[#EAA122] font-bold";
+                        bgClass = "bg-gradient-to-r from-[#FDF3DF] to-[#EEF4FA] border-[#EAA122] font-bold";
                     } else {
                         bgClass = "bg-[#FDF3DF]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
                     }
@@ -1321,11 +1313,11 @@
                         bgClass = "bg-[#FDF3DF]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
                     }
                 } else if (isAlignedReturn) {
-                    arrowIndicator = '<span class="text-[#9E968E] font-extrabold text-xs">←</span>';
+                    arrowIndicator = '<span class="text-[#3E78B2] font-extrabold text-xs">←</span>';
                     if (isReturnFlightDay) {
-                        bgClass = "bg-[#EFE9DB] border-[#9E968E] font-bold";
+                        bgClass = "bg-[#EEF4FA] border-[#3E78B2] font-bold";
                     } else {
-                        bgClass = "bg-[#EFE9DB]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
+                        bgClass = "bg-[#EEF4FA]/40 text-[#C07A7A] border-[#C07A7A]/40 line-through decoration-[#C07A7A]";
                     }
                 } else if (isFlightDay) {
                     bgClass = "bg-[#FAF6EE] text-[#3E3A36] border-[#EFE9DB]/60 hover:bg-[#EFE9DB]/50";
@@ -1349,7 +1341,7 @@
                     iconContainer.innerHTML = arrowIndicator;
                     const specificFlightChecked = (isAlignedDepart && isAlignedReturn) ? (isDepartFlightDay && isReturnFlightDay) : (isAlignedDepart ? isDepartFlightDay : isReturnFlightDay);
                     if (!specificFlightChecked) {
-                        iconContainer.innerHTML += '<i class="fa-solid fa-triangle-exclamation text-[#C07A7A] text-[8px] ml-0.5"></i>';
+                        iconContainer.innerHTML += '<i class="fa-solid fa-triangle-exclamation text-[#C07A7A] text-[8px] ml-0.5" title="本日無此航線飛航！"></i>';
                     }
                 }
                 
@@ -1429,7 +1421,7 @@
 
                     if (item.direction === '回程') {
                         dirArrow = "← 回程";
-                        dirBg = "bg-[#EFE9DB]/60 border-[#9E968E]";
+                        dirBg = "bg-[#EEF4FA] border-[#3E78B2]"; 
                         targetAirportCode = item.data.return_from || item.data.return_to;
                     }
 
@@ -1449,7 +1441,6 @@
                                 ? `<p class="text-[10px] font-bold text-[#3E3A36] mt-1">✓ 參考班表：${targetAirportName}航點當天有航班</p>` 
                                 : `<p class="text-[10px] font-bold text-[#C07A7A] mt-1">⚠️ 警告：歷史對齊推估有票，但今年該航線在${weekdayName}並無飛航，請提早或延後至鄰近有航班日。</p>`
                             }
-                            <!-- 價格套用 formatPrice() 確保顯示千分位（例如 1,599） -->
                             <div class="mt-1.5 text-[10px] text-[#3E3A36] bg-white/70 p-1.5 rounded font-mono border border-[#EFE9DB]">
                                 歷史票價參考: 去程 NT$${formatPrice(item.data.depart_price)} / 回程 NT$${formatPrice(item.data.return_price)}
                             </div>
@@ -1492,6 +1483,50 @@
             handleCalendarCellClick(dateStr, isFlightDay, tempDate.getDate());
         }
 
+        // --- 編輯紀錄載入功能 ---
+        function startEditRecord(id) {
+            const r = records.find(item => item.id === id);
+            if (!r) return;
+
+            editingRecordId = id;
+            
+            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-pen-to-square text-[#EAA122]"></i> 正在編輯促銷紀錄`;
+            document.getElementById('btn-submit-record-text').textContent = "確認修改紀錄";
+            document.getElementById('btn-cancel-edit-record').classList.remove('hidden');
+
+            const sourceRadios = document.querySelectorAll('input[name="source_type"]');
+            sourceRadios.forEach(radio => {
+                radio.checked = (radio.value === r.source_type);
+            });
+
+            document.getElementById('record-depart-from').value = r.depart_from || "";
+            document.getElementById('record-depart-to').value = r.depart_to || "";
+            document.getElementById('record-depart-date').value = r.depart_date || "";
+            document.getElementById('record-depart-price').value = r.depart_price !== null ? r.depart_price : "";
+
+            document.getElementById('record-return-from').value = r.return_from || "";
+            document.getElementById('record-return-to').value = r.return_to || "";
+            document.getElementById('record-return-date').value = r.return_date || "";
+            document.getElementById('record-return-price').value = r.return_price !== null ? r.return_price : "";
+
+            const promoRadios = document.querySelectorAll('input[name="promo_category"]');
+            promoRadios.forEach(radio => {
+                radio.checked = (radio.value === r.promo_category);
+            });
+
+            document.getElementById('record-form').scrollIntoView({ behavior: 'smooth' });
+            showToast("已載入選取紀錄，修改後請點選確認修改！", "info");
+        }
+
+        function cancelEditRecord() {
+            editingRecordId = null;
+            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-plus text-[#EAA122]"></i> 新增促銷 / 查價紀錄`;
+            document.getElementById('btn-submit-record-text').textContent = "儲存紀錄";
+            document.getElementById('btn-cancel-edit-record').classList.add('hidden');
+            document.getElementById('record-form').reset();
+            showToast("已取消編輯狀態", "info");
+        }
+
         async function handleRecordSubmit(e) {
             e.preventDefault();
 
@@ -1515,24 +1550,51 @@
                 return;
             }
 
-            const record = {
-                id: 'r_' + Date.now(),
-                source_type: document.querySelector('input[name="source_type"]:checked').value,
-                depart_from: hasDepart ? departFrom : "",
-                depart_to: hasDepart ? departTo : "",
-                return_from: hasReturn ? returnFrom : "",
-                return_to: hasReturn ? returnTo : "",
-                promo_category: document.querySelector('input[name="promo_category"]:checked').value,
-                depart_date: hasDepart ? departDate : null,
-                return_date: hasReturn ? returnDate : null,
-                depart_price: hasDepart ? departPrice : null,
-                return_price: hasReturn ? returnPrice : null
-            };
+            const sourceType = document.querySelector('input[name="source_type"]:checked').value;
+            const promoCategory = document.querySelector('input[name="promo_category"]:checked').value;
 
-            records.push(record);
+            if (editingRecordId) {
+                const index = records.findIndex(item => item.id === editingRecordId);
+                if (index > -1) {
+                    records[index] = {
+                        ...records[index],
+                        source_type: sourceType,
+                        depart_from: hasDepart ? departFrom : "",
+                        depart_to: hasDepart ? departTo : "",
+                        return_from: hasReturn ? returnFrom : "",
+                        return_to: hasReturn ? returnTo : "",
+                        promo_category: promoCategory,
+                        depart_date: hasDepart ? departDate : null,
+                        return_date: hasReturn ? returnDate : null,
+                        depart_price: hasDepart ? departPrice : null,
+                        return_price: hasReturn ? returnPrice : null
+                    };
+                    showToast("紀錄修改成功！");
+                }
+                editingRecordId = null;
+                document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-plus text-[#EAA122]"></i> 新增促銷 / 查價紀錄`;
+                document.getElementById('btn-submit-record-text').textContent = "儲存紀錄";
+                document.getElementById('btn-cancel-edit-record').classList.add('hidden');
+            } else {
+                const record = {
+                    id: 'r_' + Date.now(),
+                    source_type: sourceType,
+                    depart_from: hasDepart ? departFrom : "",
+                    depart_to: hasDepart ? departTo : "",
+                    return_from: hasReturn ? returnFrom : "",
+                    return_to: hasReturn ? returnTo : "",
+                    promo_category: promoCategory,
+                    depart_date: hasDepart ? departDate : null,
+                    return_date: hasReturn ? returnDate : null,
+                    depart_price: hasDepart ? departPrice : null,
+                    return_price: hasReturn ? returnPrice : null
+                };
+                records.push(record);
+                showToast("儲存成功！");
+            }
+
             await syncData();
 
-            // 僅清除日期與金額，保留原本輸入之航線與分類以利連續輸入同一航點之歷史低價
             document.getElementById('record-depart-date').value = '';
             document.getElementById('record-depart-price').value = '';
             document.getElementById('record-return-date').value = '';
@@ -1541,13 +1603,14 @@
             populateRouteDropdowns();
             updateDashboard();
             renderRecordsTable();
-            
-            showToast("儲存成功！");
         }
 
         async function deleteRecord(id) {
             showConfirm("刪除紀錄", "確定要刪除這筆促銷紀錄嗎？", async () => {
                 records = records.filter(r => r.id !== id);
+                if (editingRecordId === id) {
+                    cancelEditRecord();
+                }
                 await syncData();
                 populateRouteDropdowns();
                 updateDashboard();
@@ -1559,6 +1622,7 @@
         async function confirmClearAllRecords() {
             showConfirm("清空所有紀錄", "確定要清空所有的促銷與觀測紀錄嗎？這項動作將完全清除您的資料庫！", async () => {
                 records = [];
+                editingRecordId = null;
                 await syncData();
                 populateRouteDropdowns();
                 updateDashboard();
@@ -1567,70 +1631,107 @@
             });
         }
 
-        function exportDataToJSON() {
-            const backupData = {
-                version: "tigerair_v7",
-                records: records,
-                schedules: schedules,
-                nogoDays: nogoDays,
-                airportZh: airportZh
-            };
-            const jsonString = JSON.stringify(backupData, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `tigerair_promo_backup_${formatDate(new Date())}.json`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showToast("備份檔匯出成功！");
+        // --- 循環切換分組模式邏輯 ---
+        function toggleGroupMode() {
+            if (currentGroupMode === 'city') {
+                currentGroupMode = 'category';
+            } else if (currentGroupMode === 'category') {
+                currentGroupMode = 'none';
+            } else {
+                currentGroupMode = 'city';
+            }
+            updateGroupCycleButtonUI();
+            renderRecordsTable();
         }
 
-        async function importDataFromJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // --- 更新分組切換按鈕的動態 UI 與圖標 ---
+        function updateGroupCycleButtonUI() {
+            const btnIcon = document.getElementById('btn-group-cycle-icon');
+            const btn = document.getElementById('btn-group-cycle');
+            if (!btnIcon || !btn) return;
 
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (parsed && Array.isArray(parsed.records)) {
-                        records = parsed.records;
-                        schedules = parsed.schedules || [];
-                        nogoDays = parsed.nogoDays || [];
-                        if (parsed.airportZh) {
-                            airportZh = { ...airportZh, ...parsed.airportZh };
-                        }
-                        
-                        await syncData();
-                        populateRouteDropdowns();
-                        updateDashboard();
-                        renderRecordsTable();
-                        renderSchedulesList();
-                        
-                        showToast("資料還原成功！已導入備份紀錄。");
-                    } else {
-                        showToast("備份檔格式不正確，導入失敗。", "error");
-                    }
-                } catch (err) {
-                    showToast("讀取備份檔案發生錯誤。", "error");
-                }
-                event.target.value = "";
-            };
-            reader.readAsText(file);
+            if (currentGroupMode === 'city') {
+                btnIcon.className = "fa-solid fa-map-location-dot text-[#EAA122]";
+                btn.title = "當前分組：依目的地城市 (點擊切換)";
+                showToast("分組模式：依目的地城市", "info");
+            } else if (currentGroupMode === 'category') {
+                btnIcon.className = "fa-solid fa-tags text-[#EAA122]";
+                btn.title = "當前分組：依促銷檔期 (點擊切換)";
+                showToast("分組模式：依促銷檔期", "info");
+            } else {
+                btnIcon.className = "fa-solid fa-list text-[#9E968E]";
+                btn.title = "當前分組：不分組 (點擊切換)";
+                showToast("分組模式：不進行分組", "info");
+            }
         }
 
+        // --- 一鍵折疊與展開邏輯處理 ---
+        function toggleAllCollapse() {
+            const groupBy = currentGroupMode;
+            if (groupBy === 'none') {
+                showToast("不分組模式下，無可摺疊之分組", "info");
+                return;
+            }
+
+            const searchInput = document.getElementById('record-search');
+            const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
+            const filtered = records.filter(r => {
+                const departZH = getAirportName(r.depart_from) + getAirportName(r.depart_to);
+                const returnZH = getAirportName(r.return_from) + getAirportName(r.return_to);
+                const text = `${r.depart_from} ${r.depart_to} ${r.return_from} ${r.return_to} ${r.promo_category} ${departZH} ${returnZH}`.toLowerCase();
+                return text.includes(searchVal);
+            });
+
+            let groupKeys = [];
+            if (groupBy === 'city') {
+                const keys = new Set();
+                filtered.forEach(r => {
+                    const destCode = getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to);
+                    const cityName = destCode ? `${getAirportName(destCode)} (${destCode})` : "其他未定義目的地";
+                    keys.add(cityName);
+                });
+                groupKeys = Array.from(keys);
+            } else if (groupBy === 'category') {
+                const keys = new Set();
+                filtered.forEach(r => {
+                    const catName = r.promo_category === 'anniversary' ? "九月 週年大促紀錄" : "三月 復活節促銷紀錄";
+                    keys.add(catName);
+                });
+                groupKeys = Array.from(keys);
+            }
+
+            if (groupKeys.length === 0) return;
+
+            const hasExpanded = groupKeys.some(k => collapsedGroups[k] !== true);
+
+            groupKeys.forEach(k => {
+                collapsedGroups[k] = hasExpanded;
+            });
+
+            renderRecordsTable();
+            showToast(hasExpanded ? "已一鍵折疊所有分組" : "已一鍵展開所有分組", "info");
+        }
+
+        // --- 重構歷史紀錄渲染功能 ---
         function renderRecordsTable() {
-            const tbody = document.getElementById('records-table-body');
-            const mobileList = document.getElementById('records-mobile-list');
+            const container = document.getElementById('records-grouped-container');
             const searchInput = document.getElementById('record-search');
             const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
             
-            tbody.innerHTML = "";
-            mobileList.innerHTML = "";
+            const groupBy = currentGroupMode;
+            container.innerHTML = "";
+
+            // 處理「一鍵折疊」按鈕樣式與防呆
+            const btnCollapseAll = document.getElementById('btn-collapse-all');
+            const btnCollapseIcon = document.getElementById('btn-collapse-all-icon');
+            
+            if (groupBy === 'none') {
+                btnCollapseAll.className = "bg-[#FAF6EE] text-stone-300 p-2 rounded-lg border border-[#EFE9DB] transition duration-200 flex items-center justify-center text-xs w-8 h-8 shrink-0 cursor-not-allowed opacity-50";
+                btnCollapseAll.title = "不分組模式下無法摺疊";
+                btnCollapseIcon.className = "fa-solid fa-compress text-stone-300";
+            } else {
+                btnCollapseAll.className = "bg-[#FAF6EE] hover:bg-[#EFE9DB] text-[#3E3A36] p-2 rounded-lg border border-[#EFE9DB] transition duration-200 flex items-center justify-center text-xs w-8 h-8 shrink-0 cursor-pointer";
+            }
 
             const filtered = records.filter(r => {
                 const departZH = getAirportName(r.depart_from) + getAirportName(r.depart_to);
@@ -1640,109 +1741,215 @@
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-[#9E968E] text-xs">目前暫無任何促銷觀測紀錄。</td></tr>`;
-                mobileList.innerHTML = `<div class="text-center text-[#9E968E] text-xs py-8">目前暫無任何促銷觀測紀錄。</div>`;
+                container.innerHTML = `<div class="text-center text-[#9E968E] text-xs py-8 bg-[#FFFDF9] border border-dashed border-[#EFE9DB] rounded-lg">目前暫無任何促銷觀測紀錄。</div>`;
                 return;
             }
 
-            filtered.forEach(r => {
-                let promoBadge = "";
-                let mobilePromoBadge = "";
-                if (r.promo_category === 'anniversary') {
-                    promoBadge = '<span class="bg-[#FDF3DF] text-[#3E3A36] px-2 py-0.5 rounded text-[10px] font-bold">週年大促</span>';
-                    mobilePromoBadge = '<span class="bg-[#FDF3DF] text-[#3E3A36] px-1.5 py-0.5 rounded text-[9px] font-bold">週年大促</span>';
+            let groups = {};
+            if (groupBy === 'none') {
+                groups['all'] = { name: "所有促銷紀錄 (由新到舊)", records: filtered };
+            } else if (groupBy === 'city') {
+                filtered.forEach(r => {
+                    const destCode = getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to);
+                    const cityName = destCode ? `${getAirportName(destCode)} (${destCode})` : "其他未定義目的地";
+                    if (!groups[cityName]) {
+                        groups[cityName] = { name: cityName, records: [] };
+                    }
+                    groups[cityName].records.push(r);
+                });
+            } else if (groupBy === 'category') {
+                filtered.forEach(r => {
+                    const catName = r.promo_category === 'anniversary' ? "九月 週年大促紀錄" : "三月 復活節促銷紀錄";
+                    if (!groups[catName]) {
+                        groups[catName] = { name: catName, records: [] };
+                    }
+                    groups[catName].records.push(r);
+                });
+            }
+
+            // 動態更新一鍵折疊按鈕的文字與 icon
+            if (groupBy !== 'none') {
+                const groupKeys = Object.keys(groups);
+                const hasExpanded = groupKeys.some(k => collapsedGroups[k] !== true);
+                if (hasExpanded) {
+                    btnCollapseAll.title = "摺疊全部";
+                    btnCollapseIcon.className = "fa-solid fa-compress text-[#3E3A36]";
                 } else {
-                    promoBadge = '<span class="bg-[#EFE9DB] text-[#3E3A36] px-2 py-0.5 rounded text-[10px] font-bold">復活節促銷</span>';
-                    mobilePromoBadge = '<span class="bg-[#EFE9DB] text-[#3E3A36] px-1.5 py-0.5 rounded text-[9px] font-bold">復活節促銷</span>';
+                    btnCollapseAll.title = "展開全部";
+                    btnCollapseIcon.className = "fa-solid fa-expand text-[#3E3A36]";
+                }
+            }
+
+            Object.keys(groups).forEach(groupKey => {
+                const group = groups[groupKey];
+                const isCollapsed = collapsedGroups[groupKey] === true; 
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.className = "border border-[#EFE9DB] rounded-xl overflow-hidden bg-[#FFFDF9] morandi-shadow transition-all duration-300";
+
+                const headerHtml = `
+                    <div class="bg-[#FAF6EE] px-4 py-2.5 flex items-center justify-between cursor-pointer select-none hover:bg-[#F3EAD8] transition border-b border-[#EFE9DB]/60" data-toggle-group="${groupKey}">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid ${groupBy === 'city' ? 'fa-map-location-dot text-[#EAA122]' : groupBy === 'category' ? 'fa-tags text-[#EAA122]' : 'fa-folder-open text-[#EAA122]'} text-xs"></i>
+                            <span class="font-bold text-[11px] text-[#3E3A36]">${group.name}</span>
+                            <span class="text-[9px] bg-[#3E3A36] text-white px-2 py-0.5 rounded-full font-bold font-mono">${group.records.length} 筆</span>
+                        </div>
+                        <div class="text-[#9E968E] text-[10px] flex items-center gap-1.5 font-bold">
+                            <span>${isCollapsed ? '展開' : '收合'}</span>
+                            <i class="fa-solid ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs"></i>
+                        </div>
+                    </div>
+                `;
+                groupDiv.innerHTML = headerHtml;
+
+                if (!isCollapsed) {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = "p-3 space-y-3";
+
+                    // === 桌機版表格結構 ===
+                    const desktopWrapper = document.createElement('div');
+                    desktopWrapper.className = "hidden md:block overflow-x-auto";
+                    
+                    let rowsHtml = "";
+                    group.records.forEach(r => {
+                        const promoBadge = r.promo_category === 'anniversary' 
+                            ? '<span class="bg-[#FDF3DF] text-[#3E3A36] px-2 py-0.5 rounded text-[10px] font-bold border border-[#EAA122]/30">週年大促</span>' 
+                            : '<span class="bg-[#EFE9DB] text-[#3E3A36] px-2 py-0.5 rounded text-[10px] font-bold border border-[#9E968E]/30">復活節</span>';
+
+                        const sourceBadge = r.source_type === 'PTT' 
+                            ? '<span class="text-[9px] text-[#C07A7A] border border-[#C07A7A]/30 px-1 rounded bg-[#C07A7A]/10 font-bold">PTT</span>' 
+                            : '<span class="text-[9px] text-[#3E78B2] border border-[#3E78B2]/30 px-1 rounded bg-[#EEF4FA] font-bold">官網</span>';
+
+                        const departInfo = r.depart_date ? `
+                            <div class="font-bold text-[#3E3A36] text-[11px]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div>
+                            <div class="text-[#9E968E] font-mono text-[9px] mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${r.depart_date} (${getWeekdayName(r.depart_date)})</div>
+                        ` : `<span class="text-[#9E968E] italic text-[10px]">無去程資訊</span>`;
+
+                        const returnInfo = r.return_date ? `
+                            <div class="font-bold text-[#3E3A36] text-[11px]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div>
+                            <div class="text-[#9E968E] font-mono text-[9px] mt-0.5"><i class="fa-regular fa-calendar text-[#3E78B2] mr-1"></i>${r.return_date} (${getWeekdayName(r.return_date)})</div>
+                        ` : `<span class="text-[#9E968E] italic text-[10px]">無回程資訊</span>`;
+
+                        const priceInfo = `
+                            <div class="font-mono text-[10px] text-[#3E3A36] font-semibold"><span class="text-[#EAA122]">去:</span> NT$${formatPrice(r.depart_price)}</div>
+                            <div class="font-mono text-[10px] text-[#3E78B2] font-semibold"><span>回:</span> NT$${formatPrice(r.return_price)}</div>
+                        `;
+
+                        const isEditingThis = editingRecordId === r.id;
+
+                        rowsHtml += `
+                            <tr class="hover:bg-[#FAF6EE]/50 transition border-b border-[#FAF6EE] ${isEditingThis ? 'bg-[#FDF3DF]/40 border-l-4 border-l-[#EAA122]' : ''}">
+                                <td class="p-2">
+                                    <div class="flex flex-col gap-1 items-start">
+                                        ${promoBadge}
+                                        ${sourceBadge}
+                                    </div>
+                                </td>
+                                <td class="p-2">${departInfo}</td>
+                                <td class="p-2">${returnInfo}</td>
+                                <td class="p-2">${priceInfo}</td>
+                                <td class="p-2 text-center">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <button data-edit-record="${r.id}" class="${isEditingThis ? 'text-[#EAA122]' : 'text-[#9E968E]'} hover:text-[#EAA122] p-1 rounded transition duration-200" title="編輯這筆紀錄">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </button>
+                                        <button data-delete-record="${r.id}" class="text-[#9E968E] hover:text-[#C07A7A] p-1 rounded transition duration-200" title="刪除紀錄">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    desktopWrapper.innerHTML = `
+                        <table class="w-full text-xs text-left border-collapse">
+                            <thead>
+                                <tr class="bg-[#FAF6EE]/50 text-[#9E968E] border-b border-[#EFE9DB] font-semibold text-[10px]">
+                                    <th class="p-2 w-[110px]">性質</th>
+                                    <th class="p-2">去程航線 / 對齊日</th>
+                                    <th class="p-2">回程航線 / 對齊日</th>
+                                    <th class="p-2 w-[130px]">未稅票價</th>
+                                    <th class="p-2 text-center w-[80px]">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#FAF6EE]">
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    `;
+                    contentDiv.appendChild(desktopWrapper);
+
+
+                    // === 手機版卡片結構 ===
+                    const mobileWrapper = document.createElement('div');
+                    mobileWrapper.className = "block md:hidden space-y-3";
+
+                    group.records.forEach(r => {
+                        const mPromoBadge = r.promo_category === 'anniversary' 
+                            ? '<span class="bg-[#FDF3DF] text-[#3E3A36] px-1.5 py-0.5 rounded text-[9px] font-bold border border-[#EAA122]/30">週年大促</span>' 
+                            : '<span class="bg-[#EFE9DB] text-[#3E3A36] px-1.5 py-0.5 rounded text-[9px] font-bold border border-[#9E968E]/30">復活節</span>';
+
+                        const mSourceBadge = r.source_type === 'PTT'
+                            ? '<span class="text-[8px] text-[#C07A7A] border border-[#C07A7A]/25 px-1 rounded bg-[#C07A7A]/10 font-bold">PTT</span>'
+                            : '<span class="text-[8px] text-[#3E78B2] border border-[#3E78B2]/25 px-1 rounded bg-[#EEF4FA] font-bold">自查</span>';
+
+                        const mDepart = r.depart_date 
+                            ? `<div class="font-bold text-[#3E3A36] text-[11px]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div>
+                               <div class="text-[#9E968E] font-mono text-[9px] mt-0.5">${r.depart_date} (${getWeekdayName(r.depart_date)})</div>`
+                            : `<div class="text-[#9E968E] italic text-[10px]">無去程預期班次</div>`;
+
+                        const mReturn = r.return_date 
+                            ? `<div class="font-bold text-[#3E3A36] text-[11px]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div>
+                               <div class="text-[#9E968E] font-mono text-[9px] mt-0.5">${r.return_date} (${getWeekdayName(r.return_date)})</div>`
+                            : `<div class="text-[#9E968E] italic text-[10px]">無回程預期班次</div>`;
+
+                        const isEditingThis = editingRecordId === r.id;
+
+                        const card = document.createElement('div');
+                        card.className = `bg-[#FFFDF9] border rounded-lg p-3 space-y-2.5 shadow-sm border-[#EFE9DB]/80 ${isEditingThis ? 'bg-[#FDF3DF]/40 border-2 border-[#EAA122]' : ''}`;
+                        
+                        card.innerHTML = `
+                            <div class="flex items-center justify-between border-b border-[#EFE9DB]/60 pb-2">
+                                <div class="flex items-center gap-1.5">
+                                    ${mPromoBadge}
+                                    ${mSourceBadge}
+                                    ${isEditingThis ? '<span class="bg-[#EAA122] text-white text-[8px] px-1 rounded font-bold animate-pulse">編輯中</span>' : ''}
+                                </div>
+                                <div class="flex items-center gap-1 bg-[#FAF6EE] px-1 rounded">
+                                    <button data-edit-record="${r.id}" class="text-[#9E968E] hover:text-[#EAA122] p-1.5 rounded transition" title="編輯紀錄">
+                                        <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                                    </button>
+                                    <button data-delete-record="${r.id}" class="text-[#9E968E] hover:text-[#C07A7A] p-1.5 rounded transition" title="刪除紀錄">
+                                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pb-1">
+                                <div class="border-l-2 border-[#EAA122] pl-1.5">
+                                    <span class="text-[8px] text-[#9E968E] block tracking-wider uppercase font-semibold mb-0.5">去程預估</span>
+                                    ${mDepart}
+                                </div>
+                                <div class="border-l-2 border-[#3E78B2] pl-1.5">
+                                    <span class="text-[8px] text-[#9E968E] block tracking-wider uppercase font-semibold mb-0.5">回程預估</span>
+                                    ${mReturn}
+                                </div>
+                            </div>
+                            <div class="bg-[#FAF6EE] p-2 rounded flex justify-between items-center text-[10px] border border-[#EFE9DB]/50">
+                                <span class="text-[#9E968E] font-semibold">歷史未稅票價參考</span>
+                                <div class="font-mono font-bold text-[#3E3A36]">
+                                    去: <span class="text-[#EAA122]">NT$${formatPrice(r.depart_price)}</span> 
+                                    / 回: <span class="text-[#3E78B2]">NT$${formatPrice(r.return_price)}</span>
+                                </div>
+                            </div>
+                        `;
+                        mobileWrapper.appendChild(card);
+                    });
+                    contentDiv.appendChild(mobileWrapper);
+                    groupDiv.appendChild(contentDiv);
                 }
 
-                const sourceBadge = r.source_type === 'PTT' 
-                    ? '<span class="text-[9px] text-[#C07A7A] border border-[#C07A7A]/30 px-1 rounded ml-1 bg-[#C07A7A]/10 font-semibold">PTT</span>' 
-                    : '<span class="text-[9px] text-[#9E968E] border border-[#9E968E]/30 px-1 rounded ml-1 bg-[#9E968E]/10 font-semibold">自查</span>';
-
-                const mobileSourceBadge = r.source_type === 'PTT'
-                    ? '<span class="text-[8px] text-[#C07A7A] border border-[#C07A7A]/25 px-1 rounded bg-[#C07A7A]/10 font-semibold">PTT</span>'
-                    : '<span class="text-[8px] text-[#9E968E] border border-[#9E968E]/25 px-1 rounded bg-[#9E968E]/10 font-semibold">自查</span>';
-
-                const departInfo = r.depart_date ? `
-                    <div class="font-bold text-[#3E3A36]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div>
-                    <div class="text-[#9E968E] font-mono text-[10px]">${r.depart_date} (${getWeekdayName(r.depart_date)})</div>
-                ` : `<span class="text-[#9E968E] italic text-[10px]">無去程</span>`;
-
-                const returnInfo = r.return_date ? `
-                    <div class="font-bold text-[#3E3A36]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div>
-                    <div class="text-[#9E968E] font-mono text-[10px]">${r.return_date} (${getWeekdayName(r.return_date)})</div>
-                ` : `<span class="text-[#9E968E] italic text-[10px]">無回程</span>`;
-
-                // 桌機票價呈現千分位（例如 1,599）
-                const priceInfo = `
-                    <div class="font-mono text-[10px] text-[#9E968E]">去: ${r.depart_price ? 'NT$' + formatPrice(r.depart_price) : '-'}</div>
-                    <div class="font-mono text-[10px] text-[#9E968E]">回: ${r.return_price ? 'NT$' + formatPrice(r.return_price) : '-'}</div>
-                `;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-[#FAF6EE]/50 transition border-b border-[#FAF6EE]";
-                tr.innerHTML = `
-                    <td class="p-2.5">
-                        <div class="flex flex-col gap-1 items-start">
-                            ${promoBadge}
-                            ${sourceBadge}
-                        </div>
-                    </td>
-                    <td class="p-2.5">${departInfo}</td>
-                    <td class="p-2.5">${returnInfo}</td>
-                    <td class="p-2.5">${priceInfo}</td>
-                    <td class="p-2.5 text-center">
-                        <button data-delete-record="${r.id}" class="text-[#9E968E] hover:text-[#C07A7A] p-1 rounded transition duration-200" title="刪除">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-
-                const card = document.createElement('div');
-                card.className = "bg-[#FFFDF9] border border-[#EFE9DB] rounded-lg p-3 space-y-2.5 morandi-shadow text-xs";
-                
-                const mDepart = r.depart_date 
-                    ? `<div class="font-bold text-[#3E3A36] text-[11px]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div>
-                       <div class="text-[#9E968E] font-mono text-[9px] mt-0.5">${r.depart_date} (${getWeekdayName(r.depart_date)})</div>`
-                    : `<div class="text-[#9E968E] italic text-[10px] mt-0.5">無去程班次</div>`;
-
-                const mReturn = r.return_date 
-                    ? `<div class="font-bold text-[#3E3A36] text-[11px]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div>
-                       <div class="text-[#9E968E] font-mono text-[9px] mt-0.5">${r.return_date} (${getWeekdayName(r.return_date)})</div>`
-                    : `<div class="text-[#9E968E] italic text-[10px] mt-0.5">無回程班次</div>`;
-
-                // 手機卡片票價呈現千分位（例如 1,599）
-                card.innerHTML = `
-                    <div class="flex items-center justify-between border-b border-[#EFE9DB]/60 pb-2">
-                        <div class="flex items-center gap-1.5">
-                            ${mobilePromoBadge}
-                            ${mobileSourceBadge}
-                        </div>
-                        <button data-delete-record="${r.id}" class="text-[#9E968E] hover:text-[#C07A7A] p-1.5 bg-[#FAF6EE] rounded transition" title="刪除">
-                            <i class="fa-solid fa-trash-can text-[10px]"></i>
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 pb-1">
-                        <div class="border-l-2 border-[#EAA122] pl-1.5">
-                            <span class="text-[8px] text-[#9E968E] block tracking-wider uppercase font-semibold mb-0.5">去程預期</span>
-                            ${mDepart}
-                        </div>
-                        <div class="border-l-2 border-[#9E968E] pl-1.5">
-                            <span class="text-[8px] text-[#9E968E] block tracking-wider uppercase font-semibold mb-0.5">回程預期</span>
-                            ${mReturn}
-                        </div>
-                    </div>
-                    <div class="bg-[#FAF6EE] p-2 rounded flex justify-between items-center text-[10px] border border-[#EFE9DB]/50">
-                        <span class="text-[#9E968E] font-semibold">歷史未稅票價</span>
-                        <div class="font-mono font-bold text-[#3E3A36]">
-                            去: <span class="text-[#EAA122]">${r.depart_price ? 'NT$' + formatPrice(r.depart_price) : '-'}</span> 
-                            / 回: <span class="text-[#3E3A36]/80">${r.return_price ? 'NT$' + formatPrice(r.return_price) : '-'}</span>
-                        </div>
-                    </div>
-                `;
-                mobileList.appendChild(card);
+                container.appendChild(groupDiv);
             });
         }
 
@@ -1830,7 +2037,7 @@
             document.getElementById('sched-to-zh').value = airportZh[airportCode] || "";
 
             document.querySelectorAll('input[name="sched_days"]').forEach(cb => {
-                cb.checked = false; // 清空星期讓使用者勾選
+                cb.checked = false; 
             });
 
             document.getElementById('btn-submit-schedule').innerHTML = '<i class="fa-solid fa-plus-circle mr-1"></i> 設定 / 啟用';
@@ -1867,7 +2074,6 @@
             const container = document.getElementById('schedules-list-container');
             container.innerHTML = "";
 
-            // 1. 先為 7 大官方分類進行排程分組渲染
             for (const [regKey, region] of Object.entries(regions)) {
                 const groupWrapper = document.createElement('div');
                 groupWrapper.className = "space-y-2";
@@ -1880,7 +2086,6 @@
                 const cardsGrid = document.createElement('div');
                 cardsGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3";
 
-                // 動態遍歷該地區所有的官方設定航點 (不含 KMJ 熊本)
                 region.airports.forEach(airportCode => {
                     const matchedSched = schedules.find(s => {
                         const dest = getDestinationFromRoute(s.route);
@@ -1921,7 +2126,6 @@
                             </div>
                         `;
                     } else {
-                        // 尚未設定班表
                         card.className = "bg-[#FFFDF9]/60 border border-[#EFE9DB]/50 border-dashed rounded-lg p-3 flex items-center justify-between text-xs";
                         card.innerHTML = `
                             <div class="space-y-1">
@@ -1943,7 +2147,6 @@
                 container.appendChild(groupWrapper);
             }
 
-            // 2. 處理其他自定義地區
             const definedAirports = new Set();
             for (const r of Object.values(regions)) {
                 r.airports.forEach(a => definedAirports.add(a));
@@ -2008,3 +2211,4 @@
     </script>
 </body>
 </html>
+
