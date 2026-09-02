@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統 v6.0</title>
+    <title>虎航促銷預測系統 v6.1</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -108,7 +108,7 @@
                     </div>
                     <div>
                         <h1 class="text-xs sm:text-sm font-bold tracking-wider text-[#FDF3DF]">
-                            虎航促銷預測系統 <span class="text-[9px] bg-[#EAA122]/20 text-[#EAA122] px-1.5 py-0.5 rounded ml-1 font-mono">v6.0</span>
+                            虎航促銷預測系統 <span class="text-[9px] bg-[#EAA122]/20 text-[#EAA122] px-1.5 py-0.5 rounded ml-1 font-mono">v6.1</span>
                         </h1>
                     </div>
                 </div>
@@ -517,7 +517,7 @@
     <!-- 頁尾 (行動裝置優化：增加 pb-24 保證在手機上完全不被遮擋) -->
     <footer class="bg-[#3E3A36] text-[#9E968E] text-[10px] py-6 border-t border-[#4E4944] mt-auto pb-24 md:pb-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-1">
-            <p class="font-semibold text-stone-300">虎航促銷預測系統 · v6.0</p>
+            <p class="font-semibold text-stone-300">虎航促銷預測系統 · v6.1</p>
             <p class="text-[9px] text-stone-500">本系統與台灣虎航官方無關，預測數據僅供旅日機票規劃參考</p>
         </div>
     </footer>
@@ -1336,7 +1336,7 @@
                 iconContainer.className = "flex justify-between items-center text-[10px] h-3";
                 
                 if (isNogo) {
-                    iconContainer.innerHTML = '<span class="text-[#C07A7A] text-[8px] font-bold">✖ 留守</span>';
+                    iconContainer.innerHTML = '<span class="text-[#C07A7A] text-[8px] font-bold">✖ 無法</span>';
                 } else if (arrowIndicator) {
                     iconContainer.innerHTML = arrowIndicator;
                     const specificFlightChecked = (isAlignedDepart && isAlignedReturn) ? (isDepartFlightDay && isReturnFlightDay) : (isAlignedDepart ? isDepartFlightDay : isReturnFlightDay);
