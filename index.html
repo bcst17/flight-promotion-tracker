@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統 v6.5</title>
+    <title>虎航促銷預測系統</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -113,7 +113,7 @@
                     </div>
                     <div>
                         <h1 class="text-xs sm:text-sm font-bold tracking-wider text-gray-800">
-                            虎航促銷預測系統 <span class="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md ml-1 font-mono border border-gray-200">v6.5</span>
+                            虎航促銷預測系統
                         </h1>
                     </div>
                 </div>
@@ -250,26 +250,30 @@
                         </h4>
                         <div class="space-y-2.5 font-medium text-gray-600">
                             <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-amber-500 font-extrabold text-sm">→</span>
-                                <span>去程預估日</span>
+                                <span class="w-6 text-center text-orange-500 font-extrabold text-sm">→</span>
+                                <span>促銷去程預估</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-sky-500 font-extrabold text-sm">←</span>
-                                <span>回程預估日</span>
+                                <span class="w-6 text-center text-yellow-500 font-extrabold text-sm">←</span>
+                                <span>促銷回程預估</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-sky-500 font-extrabold text-sm">⇆</span>
-                                <span class="font-bold text-gray-800">雙向預估日</span>
+                                <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-sm">⇆</span>
+                                <span class="font-bold text-gray-800">促銷雙向預估</span>
                             </div>
                             <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
-                                <span class="w-6 text-center text-emerald-500 font-extrabold text-sm">→</span>
-                                <span class="font-bold text-emerald-600">官網最低價 (去程)</span>
+                                <span class="w-6 text-center text-indigo-500 font-extrabold text-sm">→</span>
+                                <span class="font-bold text-indigo-600">官網去程低價</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-indigo-500 font-extrabold text-sm">←</span>
-                                <span class="font-bold text-indigo-600">官網最低價 (回程)</span>
+                                <span class="w-6 text-center text-purple-500 font-extrabold text-sm">←</span>
+                                <span class="font-bold text-purple-600">官網回程低價</span>
                             </div>
                             <div class="flex items-center gap-2">
+                                <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-sm">⇆</span>
+                                <span class="font-bold text-gray-800">官網雙向低價</span>
+                            </div>
+                            <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
                                 <span class="w-6 h-3 rounded nogo-pattern inline-block border"></span>
                                 <span class="text-rose-500">無法出國日期</span>
                             </div>
@@ -339,7 +343,7 @@
                         </div>
 
                         <div class="space-y-4">
-                            <div class="border-l-2 border-amber-400 pl-3 space-y-3 bg-amber-50/30 p-2 rounded-r-xl">
+                            <div class="border-l-2 border-orange-400 pl-3 space-y-3 bg-orange-50/30 p-2 rounded-r-xl">
                                 <span class="text-[10px] font-bold text-gray-800 tracking-wider">去程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
@@ -367,7 +371,7 @@
                                 </div>
                             </div>
 
-                            <div class="border-l-2 border-sky-400 pl-3 space-y-3 bg-sky-50/30 p-2 rounded-r-xl">
+                            <div class="border-l-2 border-yellow-400 pl-3 space-y-3 bg-yellow-50/30 p-2 rounded-r-xl">
                                 <span class="text-[10px] font-bold text-gray-800 tracking-wider">回程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
@@ -528,13 +532,13 @@
                     <!-- JS 動態生成按區域分類的卡片群組 -->
                 </div>
             </div>
-        </div>
+    <!-- 主體內容區結尾 -->
     </main>
 
     <!-- 頁尾 (淺色系) -->
     <footer class="bg-white text-gray-400 text-[10px] py-8 border-t border-gray-200 mt-auto pb-24 md:pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-1.5">
-            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.5</p>
+            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.6</p>
             <p class="text-[9px] text-gray-400">本系統與台灣虎航官方無關，預測數據僅供旅日機票規劃參考</p>
         </div>
     </footer>
@@ -642,7 +646,7 @@
 
         function showConfirm(title, message, onConfirm) {
             const modal = document.getElementById('confirm-modal');
-            document.getElementById('confirm-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500"></i> ${title}`;
+            document.getElementById('confirm-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-orange-500"></i> ${title}`;
             document.getElementById('confirm-message').textContent = message;
             modal.classList.remove('hidden');
             activeConfirmCallback = onConfirm;
@@ -1181,27 +1185,27 @@
                     bgClass = "nogo-pattern text-rose-500 shadow-none";
                 } else if (isAlignedDepart && isAlignedReturn) {
                     if (onlySpotDepart && onlySpotReturn) {
-                        arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-indigo-500 font-extrabold text-xs">⇆</span>';
-                        bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-emerald-50 to-indigo-50 border-emerald-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
+                        arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-xs">⇆</span>';
+                        bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
                     } else {
-                        arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-sky-500 font-extrabold text-xs">⇆</span>';
-                        bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-amber-50 to-sky-50 border-amber-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
+                        arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-xs">⇆</span>';
+                        bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isAlignedDepart) {
                     if (onlySpotDepart) {
-                        arrowIndicator = '<span class="text-emerald-500 font-extrabold text-xs">→</span>';
-                        bgClass = isDepartFlightDay ? "bg-emerald-50 border-emerald-300 font-bold" : "bg-emerald-50/50 text-gray-400 border-gray-200 line-through";
+                        arrowIndicator = '<span class="text-indigo-500 font-extrabold text-xs">→</span>';
+                        bgClass = isDepartFlightDay ? "bg-indigo-50 border-indigo-300 font-bold" : "bg-indigo-50/50 text-gray-400 border-gray-200 line-through";
                     } else {
-                        arrowIndicator = '<span class="text-amber-500 font-extrabold text-xs">→</span>';
-                        bgClass = isDepartFlightDay ? "bg-amber-50 border-amber-300 font-bold" : "bg-amber-50/50 text-gray-400 border-gray-200 line-through";
+                        arrowIndicator = '<span class="text-orange-500 font-extrabold text-xs">→</span>';
+                        bgClass = isDepartFlightDay ? "bg-orange-50 border-orange-300 font-bold" : "bg-orange-50/50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isAlignedReturn) {
                     if (onlySpotReturn) {
-                        arrowIndicator = '<span class="text-indigo-500 font-extrabold text-xs">←</span>';
-                        bgClass = isReturnFlightDay ? "bg-indigo-50 border-indigo-300 font-bold" : "bg-indigo-50/50 text-gray-400 border-gray-200 line-through";
+                        arrowIndicator = '<span class="text-purple-500 font-extrabold text-xs">←</span>';
+                        bgClass = isReturnFlightDay ? "bg-purple-50 border-purple-300 font-bold" : "bg-purple-50/50 text-gray-400 border-gray-200 line-through";
                     } else {
-                        arrowIndicator = '<span class="text-sky-500 font-extrabold text-xs">←</span>';
-                        bgClass = isReturnFlightDay ? "bg-sky-50 border-sky-300 font-bold" : "bg-sky-50/50 text-gray-400 border-gray-200 line-through";
+                        arrowIndicator = '<span class="text-yellow-500 font-extrabold text-xs">←</span>';
+                        bgClass = isReturnFlightDay ? "bg-yellow-50 border-yellow-300 font-bold" : "bg-yellow-50/50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isFlightDay) {
                     bgClass = "bg-gray-50 text-gray-800 border-gray-200 hover:bg-gray-100";
@@ -1291,24 +1295,24 @@
                     const originalWd = getWeekdayName(item.originDate);
                     
                     let dirArrow = "→ 去程";
-                    let dirBg = "bg-amber-50 border-amber-200";
-                    let iconColor = "text-amber-500";
+                    let dirBg = "bg-orange-50 border-orange-200";
+                    let iconColor = "text-orange-500";
                     let targetAirportCode = item.data.depart_to || item.data.depart_from;
 
                     if (item.direction === '回程') {
                         dirArrow = "← 回程";
-                        dirBg = "bg-sky-50 border-sky-200"; 
-                        iconColor = "text-sky-500";
+                        dirBg = "bg-yellow-50 border-yellow-200"; 
+                        iconColor = "text-yellow-600";
                         targetAirportCode = item.data.return_from || item.data.return_to;
                     }
 
                     if (item.data.source_type === 'Spot') {
                         if (item.direction === '去程') {
-                            dirBg = "bg-emerald-50 border-emerald-200";
-                            iconColor = "text-emerald-500";
-                        } else {
                             dirBg = "bg-indigo-50 border-indigo-200";
                             iconColor = "text-indigo-500";
+                        } else {
+                            dirBg = "bg-purple-50 border-purple-200";
+                            iconColor = "text-purple-500";
                         }
                     }
 
@@ -1320,7 +1324,7 @@
                             <div class="font-bold text-gray-800 flex items-center gap-2 flex-wrap">
                                 <i class="fa-solid fa-arrows-spin ${iconColor}"></i> 
                                 [ ${targetAirportName} ] ${dirArrow} 資訊 
-                                ${item.data.source_type === 'Spot' ? '<span class="text-[9px] bg-white px-1.5 py-0.5 rounded border border-emerald-200 text-emerald-600">官網自查</span>' : ''}
+                                ${item.data.source_type === 'Spot' ? '<span class="text-[9px] bg-white px-1.5 py-0.5 rounded border border-indigo-200 text-indigo-600">官網自查</span>' : ''}
                             </div>
                             <p class="mt-1.5 text-gray-600">歷史對齊日 <strong>${item.originDate} (${originalWd})</strong>。</p>
                             ${specificRouteFlight 
@@ -1369,7 +1373,7 @@
             if (!r) return;
             editingRecordId = id;
             
-            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> 正在編輯促銷紀錄`;
+            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-pen-to-square text-orange-500"></i> 正在編輯促銷紀錄`;
             document.getElementById('btn-submit-record-text').textContent = "確認修改紀錄";
             document.getElementById('btn-cancel-edit-record').classList.remove('hidden');
 
@@ -1670,17 +1674,17 @@
                             promoBadge = '<span class="bg-gray-50 text-gray-600 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-200">復活節</span>';
                             mPromoBadge = '<span class="bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-gray-200">復活節</span>';
                         } else {
-                            promoBadge = '<span class="bg-emerald-50 text-emerald-600 px-2 py-1 rounded-md text-[9px] font-bold border border-emerald-200">一般查價</span>';
-                            mPromoBadge = '<span class="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-emerald-200">一般查價</span>';
+                            promoBadge = '<span class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md text-[9px] font-bold border border-indigo-200">一般查價</span>';
+                            mPromoBadge = '<span class="bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-200">一般查價</span>';
                         }
 
                         const sourceBadge = r.source_type === 'PTT' 
                             ? '<span class="text-[9px] text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded-md bg-white font-bold">PTT</span>' 
-                            : '<span class="text-[9px] text-emerald-600 border border-emerald-200 px-1.5 py-0.5 rounded-md bg-white font-bold">官網</span>';
+                            : '<span class="text-[9px] text-indigo-600 border border-indigo-200 px-1.5 py-0.5 rounded-md bg-white font-bold">官網</span>';
                         
                         const mSourceBadge = r.source_type === 'PTT'
                             ? '<span class="text-[8px] text-gray-500 border border-gray-200 px-1 rounded bg-white font-bold">PTT</span>'
-                            : '<span class="text-[8px] text-emerald-600 border border-emerald-200 px-1 rounded bg-white font-bold">自查</span>';
+                            : '<span class="text-[8px] text-indigo-600 border border-indigo-200 px-1 rounded bg-white font-bold">自查</span>';
 
                         const departInfo = r.depart_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${r.depart_date}</div>` : `<span class="text-gray-400 italic text-[10px]">無資訊</span>`;
                         const returnInfo = r.return_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5"><i class="fa-regular fa-calendar text-gray-400 mr-1"></i>${r.return_date}</div>` : `<span class="text-gray-400 italic text-[10px]">無資訊</span>`;
@@ -1688,43 +1692,43 @@
                         const isEditingThis = editingRecordId === r.id;
 
                         rowsHtml += `
-                            <tr class="hover:bg-gray-50/50 transition border-b border-gray-50 ${isEditingThis ? 'bg-amber-50/30 border-l-4 border-l-amber-400' : ''}">
+                            <tr class="hover:bg-gray-50/50 transition border-b border-gray-50 ${isEditingThis ? 'bg-orange-50/30 border-l-4 border-l-orange-400' : ''}">
                                 <td class="p-3"><div class="flex flex-col gap-1.5 items-start">${promoBadge}${sourceBadge}</div></td>
                                 <td class="p-3">${departInfo}</td>
                                 <td class="p-3">${returnInfo}</td>
                                 <td class="p-3">
-                                    <div class="font-mono text-[10px] text-gray-800 font-semibold mb-1"><span class="text-amber-500">去:</span> NT$${formatPrice(r.depart_price)}</div>
-                                    <div class="font-mono text-[10px] text-gray-800 font-semibold"><span>回:</span> NT$${formatPrice(r.return_price)}</div>
+                                    <div class="font-mono text-[10px] text-gray-800 font-semibold mb-1"><span class="text-orange-500">去:</span> NT$${formatPrice(r.depart_price)}</div>
+                                    <div class="font-mono text-[10px] text-gray-800 font-semibold"><span class="text-yellow-600">回:</span> NT$${formatPrice(r.return_price)}</div>
                                 </td>
                                 <td class="p-3 text-center">
-                                    <button data-edit-record="${r.id}" class="${isEditingThis ? 'text-amber-500' : 'text-gray-400'} hover:text-gray-800 p-1.5 rounded" title="編輯這筆紀錄"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button data-edit-record="${r.id}" class="${isEditingThis ? 'text-orange-500' : 'text-gray-400'} hover:text-gray-800 p-1.5 rounded" title="編輯這筆紀錄"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button data-delete-record="${r.id}" class="text-gray-400 hover:text-rose-500 p-1.5 rounded" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         `;
 
                         mobileCardsHtml += `
-                            <div class="bg-white border rounded-xl p-4 space-y-3 shadow-sm border-gray-200 ${isEditingThis ? 'bg-amber-50/20 border-2 border-amber-300' : ''}">
+                            <div class="bg-white border rounded-xl p-4 space-y-3 shadow-sm border-gray-200 ${isEditingThis ? 'bg-orange-50/20 border-2 border-orange-300' : ''}">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
-                                    <div class="flex items-center gap-1.5">${mPromoBadge}${mSourceBadge}${isEditingThis ? '<span class="bg-amber-100 text-amber-700 text-[8px] px-1.5 rounded-md font-bold">編輯中</span>' : ''}</div>
+                                    <div class="flex items-center gap-1.5">${mPromoBadge}${mSourceBadge}${isEditingThis ? '<span class="bg-orange-100 text-orange-700 text-[8px] px-1.5 rounded-md font-bold">編輯中</span>' : ''}</div>
                                     <div class="flex items-center gap-1 bg-gray-50 px-1 py-0.5 rounded-lg border border-gray-100">
                                         <button data-edit-record="${r.id}" class="text-gray-500 hover:text-gray-800 p-1.5 rounded"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button>
                                         <button data-delete-record="${r.id}" class="text-gray-500 hover:text-rose-500 p-1.5 rounded"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4 pb-1">
-                                    <div class="border-l-2 border-amber-300 pl-2">
+                                    <div class="border-l-2 border-orange-300 pl-2">
                                         <span class="text-[8px] text-gray-500 block uppercase font-semibold mb-1">去程</span>
                                         ${r.depart_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.depart_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.depart_date}</div>` : `<div class="text-gray-400 italic text-[10px]">無</div>`}
                                     </div>
-                                    <div class="border-l-2 border-sky-300 pl-2">
+                                    <div class="border-l-2 border-yellow-400 pl-2">
                                         <span class="text-[8px] text-gray-500 block uppercase font-semibold mb-1">回程</span>
                                         ${r.return_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.return_from)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.return_date}</div>` : `<div class="text-gray-400 italic text-[10px]">無</div>`}
                                     </div>
                                 </div>
                                 <div class="bg-gray-50 p-2.5 rounded-lg flex justify-between items-center text-[10px] border border-gray-100">
                                     <span class="text-gray-500 font-semibold">未稅票價參考</span>
-                                    <div class="font-mono font-bold text-gray-800">去: <span class="text-amber-500">NT$${formatPrice(r.depart_price)}</span> / 回: <span>NT$${formatPrice(r.return_price)}</span></div>
+                                    <div class="font-mono font-bold text-gray-800">去: <span class="text-orange-500">NT$${formatPrice(r.depart_price)}</span> / 回: <span class="text-yellow-600">NT$${formatPrice(r.return_price)}</span></div>
                                 </div>
                             </div>
                         `;
