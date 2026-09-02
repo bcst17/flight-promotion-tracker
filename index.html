@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統 v6.3</title>
+    <title>虎航促銷預測系統 v6.4</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,6 +13,9 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Flatpickr (Multi-date picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <!-- FontAwesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Inter & Noto Sans TC -->
@@ -90,6 +93,16 @@
         </div>
     </div>
 
+    <!-- 儲存成功專屬提示 Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[110] flex items-center justify-center hidden transition-opacity opacity-0">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 flex flex-col items-center justify-center space-y-4 minimal-shadow transform scale-95 transition-transform duration-300 w-48">
+            <div class="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-check text-emerald-500 text-2xl"></i>
+            </div>
+            <h3 class="text-sm font-bold text-gray-800 tracking-wider" id="success-modal-message">儲存成功</h3>
+        </div>
+    </div>
+
     <!-- 頂部導航欄 (淺色系) -->
     <header class="bg-white text-gray-800 shadow-sm border-b border-gray-100 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,7 +113,7 @@
                     </div>
                     <div>
                         <h1 class="text-xs sm:text-sm font-bold tracking-wider text-gray-800">
-                            虎航促銷預測系統 <span class="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md ml-1 font-mono border border-gray-200">v6.3</span>
+                            虎航促銷預測系統 <span class="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md ml-1 font-mono border border-gray-200">v6.4</span>
                         </h1>
                     </div>
                 </div>
@@ -341,7 +354,7 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <span class="text-[9px] text-gray-500 block mb-1">歷史日期</span>
-                                        <input type="date" id="record-depart-date" class="custom-date-input w-[95%] bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 focus:border-gray-400 transition">
+                                        <input type="text" id="record-depart-date" placeholder="選擇日期..." class="custom-date-input w-[95%] bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 focus:border-gray-400 transition placeholder-gray-300">
                                     </div>
                                     <div>
                                         <span class="text-[9px] text-gray-500 block mb-1">未稅票價</span>
@@ -369,7 +382,7 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <span class="text-[9px] text-gray-500 block mb-1">歷史日期</span>
-                                        <input type="date" id="record-return-date" class="custom-date-input w-[95%] bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 focus:border-gray-400 transition">
+                                        <input type="text" id="record-return-date" placeholder="選擇日期..." class="custom-date-input w-[95%] bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 focus:border-gray-400 transition placeholder-gray-300">
                                     </div>
                                     <div>
                                         <span class="text-[9px] text-gray-500 block mb-1">未稅票價</span>
@@ -517,7 +530,7 @@
     <!-- 頁尾 (淺色系) -->
     <footer class="bg-white text-gray-400 text-[10px] py-8 border-t border-gray-200 mt-auto pb-24 md:pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-1.5">
-            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.3</p>
+            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.4</p>
             <p class="text-[9px] text-gray-400">本系統與台灣虎航官方無關，預測數據僅供旅日機票規劃參考</p>
         </div>
     </footer>
@@ -537,6 +550,10 @@
         let activeConfirmCallback = null;
         let editingRoute = null; 
         let editingRecordId = null; 
+
+        // Flatpickr 實例
+        let fpDepart = null;
+        let fpReturn = null;
 
         // Firebase 雲端狀態
         const builtInFirebaseConfig = {
@@ -627,6 +644,39 @@
             activeConfirmCallback = onConfirm;
         }
 
+        function showSuccessModal(message = "儲存成功") {
+            const modal = document.getElementById('success-modal');
+            const msgEl = document.getElementById('success-modal-message');
+            if (msgEl) msgEl.textContent = message;
+            
+            modal.classList.remove('hidden');
+            // Trigger reflow 以重置動畫
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            modal.firstElementChild.classList.remove('scale-95');
+            
+            // 延遲後淡出隱藏
+            setTimeout(() => {
+                modal.classList.add('opacity-0');
+                modal.firstElementChild.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }, 1200);
+        }
+
+        function initFlatpickr(mode = 'single') {
+            if (fpDepart) fpDepart.destroy();
+            if (fpReturn) fpReturn.destroy();
+            
+            const config = {
+                mode: mode,
+                dateFormat: "Y-m-d",
+                disableMobile: true, // 強制在手機上也使用 flatpickr 介面以支援多選
+                placeholder: mode === 'multiple' ? "可選多個日期..." : "選擇日期..."
+            };
+            fpDepart = flatpickr("#record-depart-date", config);
+            fpReturn = flatpickr("#record-return-date", config);
+        }
+
         function updatePromoCategoryVisibility() {
             const sourceType = document.querySelector('input[name="source_type"]:checked').value;
             const promoContainer = document.getElementById('promo-category-container');
@@ -664,9 +714,15 @@
             bindEvent('record-search', 'input', renderRecordsTable);
 
             document.querySelectorAll('input[name="source_type"]').forEach(radio => {
-                radio.addEventListener('change', updatePromoCategoryVisibility);
+                radio.addEventListener('change', () => {
+                    updatePromoCategoryVisibility();
+                    // 切換為官網自查時啟用多選模式，其餘單選
+                    const st = document.querySelector('input[name="source_type"]:checked').value;
+                    initFlatpickr(st === 'Spot' ? 'multiple' : 'single');
+                });
             });
             updatePromoCategoryVisibility();
+            initFlatpickr('single'); // 初始載入日期選擇器
 
             bindFormSubmit('record-form', handleRecordSubmit);
             bindFormSubmit('schedule-form', handleScheduleSubmit);
@@ -1310,15 +1366,16 @@
 
             document.querySelectorAll('input[name="source_type"]').forEach(radio => radio.checked = (radio.value === r.source_type));
             updatePromoCategoryVisibility();
+            initFlatpickr('single'); // 編輯模式一律強制使用單選以免錯誤修改
 
             document.getElementById('record-depart-from').value = r.depart_from || "";
             document.getElementById('record-depart-to').value = r.depart_to || "";
-            document.getElementById('record-depart-date').value = r.depart_date || "";
+            fpDepart.setDate(r.depart_date || "");
             document.getElementById('record-depart-price').value = r.depart_price !== null ? r.depart_price : "";
 
             document.getElementById('record-return-from').value = r.return_from || "";
             document.getElementById('record-return-to').value = r.return_to || "";
-            document.getElementById('record-return-date').value = r.return_date || "";
+            fpReturn.setDate(r.return_date || "");
             document.getElementById('record-return-price').value = r.return_price !== null ? r.return_price : "";
 
             if (r.promo_category && r.promo_category !== 'none') {
@@ -1336,6 +1393,11 @@
             document.getElementById('btn-cancel-edit-record').classList.add('hidden');
             document.getElementById('record-form').reset();
             updatePromoCategoryVisibility();
+            
+            // 復原日期選擇器的原始模式
+            const st = document.querySelector('input[name="source_type"]:checked').value;
+            initFlatpickr(st === 'Spot' ? 'multiple' : 'single');
+            
             showToast("已取消編輯狀態", "info");
         }
 
@@ -1343,48 +1405,92 @@
             e.preventDefault();
             const departFrom = document.getElementById('record-depart-from').value;
             const departTo = document.getElementById('record-depart-to').value;
-            const departDate = document.getElementById('record-depart-date').value;
+            
+            // 獲取日期的字串並轉為陣列
+            const departDatesStr = document.getElementById('record-depart-date').value;
+            const departDates = departDatesStr ? departDatesStr.split(', ') : [];
             const departPrice = document.getElementById('record-depart-price').value ? parseInt(document.getElementById('record-depart-price').value) : null;
 
             const returnFrom = document.getElementById('record-return-from').value;
             const returnTo = document.getElementById('record-return-to').value;
-            const returnDate = document.getElementById('record-return-date').value;
+            
+            const returnDatesStr = document.getElementById('record-return-date').value;
+            const returnDates = returnDatesStr ? returnDatesStr.split(', ') : [];
             const returnPrice = document.getElementById('record-return-price').value ? parseInt(document.getElementById('record-return-price').value) : null;
 
-            const hasDepart = departFrom && departTo && departDate;
-            const hasReturn = returnFrom && returnTo && returnDate;
+            const hasDepart = departFrom && departTo && departDates.length > 0;
+            const hasReturn = returnFrom && returnTo && returnDates.length > 0;
 
             if (!hasDepart && !hasReturn) return showToast("請選擇出發地與目的地，並填寫歷史日期！", "error");
 
             const sourceType = document.querySelector('input[name="source_type"]:checked').value;
             const promoCategory = sourceType === 'Spot' ? 'none' : document.querySelector('input[name="promo_category"]:checked').value;
 
-            const recordData = {
+            const baseRecordData = {
                 source_type: sourceType,
-                depart_from: hasDepart ? departFrom : "",
-                depart_to: hasDepart ? departTo : "",
-                return_from: hasReturn ? returnFrom : "",
-                return_to: hasReturn ? returnTo : "",
-                promo_category: promoCategory,
-                depart_date: hasDepart ? departDate : null,
-                return_date: hasReturn ? returnDate : null,
-                depart_price: hasDepart ? departPrice : null,
-                return_price: hasReturn ? returnPrice : null
+                promo_category: promoCategory
             };
 
             if (editingRecordId) {
+                // 編輯模式（一律為單筆單日期）
+                const recordData = {
+                    ...baseRecordData,
+                    depart_from: hasDepart ? departFrom : "",
+                    depart_to: hasDepart ? departTo : "",
+                    return_from: hasReturn ? returnFrom : "",
+                    return_to: hasReturn ? returnTo : "",
+                    depart_date: hasDepart ? departDates[0] : null,
+                    return_date: hasReturn ? returnDates[0] : null,
+                    depart_price: hasDepart ? departPrice : null,
+                    return_price: hasReturn ? returnPrice : null
+                };
+                
                 const index = records.findIndex(item => item.id === editingRecordId);
                 if (index > -1) {
                     records[index] = { ...records[index], ...recordData };
-                    showToast("紀錄修改成功！");
+                    showSuccessModal("紀錄修改成功！");
                 }
                 cancelEditRecord();
             } else {
-                records.push({ id: 'r_' + Date.now(), ...recordData });
-                showToast("儲存成功！");
-                document.getElementById('record-depart-date').value = '';
+                if (sourceType === 'Spot' && (departDates.length > 1 || returnDates.length > 1)) {
+                    // 自動將多選日期拆分為多筆獨立紀錄儲存
+                    departDates.forEach(d => {
+                        records.push({
+                            id: 'r_' + Date.now() + Math.floor(Math.random() * 1000),
+                            ...baseRecordData,
+                            depart_from: departFrom, depart_to: departTo, depart_date: d, depart_price: departPrice,
+                            return_from: "", return_to: "", return_date: null, return_price: null
+                        });
+                    });
+                    returnDates.forEach(d => {
+                        records.push({
+                            id: 'r_' + Date.now() + Math.floor(Math.random() * 1000),
+                            ...baseRecordData,
+                            return_from: returnFrom, return_to: returnTo, return_date: d, return_price: returnPrice,
+                            depart_from: "", depart_to: "", depart_date: null, depart_price: null
+                        });
+                    });
+                } else {
+                    // 一般單筆紀錄儲存
+                    records.push({ 
+                        id: 'r_' + Date.now(), 
+                        ...baseRecordData,
+                        depart_from: hasDepart ? departFrom : "",
+                        depart_to: hasDepart ? departTo : "",
+                        return_from: hasReturn ? returnFrom : "",
+                        return_to: hasReturn ? returnTo : "",
+                        depart_date: hasDepart ? departDates[0] : null,
+                        return_date: hasReturn ? returnDates[0] : null,
+                        depart_price: hasDepart ? departPrice : null,
+                        return_price: hasReturn ? returnPrice : null
+                    });
+                }
+                
+                showSuccessModal("儲存成功！");
+                
+                if (fpDepart) fpDepart.clear();
+                if (fpReturn) fpReturn.clear();
                 document.getElementById('record-depart-price').value = '';
-                document.getElementById('record-return-date').value = '';
                 document.getElementById('record-return-price').value = '';
             }
 
