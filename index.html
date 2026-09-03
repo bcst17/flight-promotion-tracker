@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統</title>
+    <title>虎航促銷預測系統 v6.6</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -232,50 +232,57 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 
                 <!-- 左側：班表營運狀態 -->
-                <div class="bg-white rounded-2xl p-5 border border-gray-100 space-y-5 lg:col-span-1 minimal-shadow h-fit">
-                    <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-info text-gray-400"></i> 當前航線營運日
-                    </h3>
+                <div class="bg-white rounded-2xl p-4 lg:p-5 border border-gray-100 lg:col-span-1 minimal-shadow h-fit">
                     
-                    <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                        <div class="grid grid-cols-7 gap-1.5 text-center text-[10px]" id="route-days-preview">
-                            <!-- JS 動態生成 -->
-                        </div>
+                    <div class="flex items-center justify-between cursor-pointer lg:cursor-default" id="btn-toggle-info">
+                        <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-gray-400"></i> 當前航線營運日與圖例
+                        </h3>
+                        <!-- 手機版摺疊箭頭 -->
+                        <i class="fa-solid fa-chevron-down text-gray-400 lg:hidden" id="info-toggle-icon"></i>
                     </div>
+                    
+                    <div id="dashboard-info-content" class="hidden lg:block mt-4 space-y-5">
+                        <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+                            <div class="grid grid-cols-7 gap-1.5 text-center text-[10px]" id="route-days-preview">
+                                <!-- JS 動態生成 -->
+                            </div>
+                        </div>
 
-                    <!-- 星期對齊說明圖例 -->
-                    <div class="bg-white rounded-xl p-3 border border-gray-100 text-[10px] space-y-3 shadow-sm">
-                        <h4 class="font-bold text-gray-700 flex items-center gap-1.5 pb-2 border-b border-gray-50">
-                            <i class="fa-solid fa-sliders text-gray-400"></i> 圖例對照
-                        </h4>
-                        <div class="space-y-2.5 font-medium text-gray-600">
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-orange-500 font-extrabold text-sm">→</span>
-                                <span>促銷去程預估</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-yellow-500 font-extrabold text-sm">←</span>
-                                <span>促銷回程預估</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-sm">⇆</span>
-                                <span class="font-bold text-gray-800">促銷雙向預估</span>
-                            </div>
-                            <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
-                                <span class="w-6 text-center text-indigo-500 font-extrabold text-sm">→</span>
-                                <span class="font-bold text-indigo-600">官網去程低價</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-purple-500 font-extrabold text-sm">←</span>
-                                <span class="font-bold text-purple-600">官網回程低價</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-sm">⇆</span>
-                                <span class="font-bold text-gray-800">官網雙向低價</span>
-                            </div>
-                            <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
-                                <span class="w-6 h-3 rounded nogo-pattern inline-block border"></span>
-                                <span class="text-rose-500">無法出國日期</span>
+                        <!-- 星期對齊說明圖例 -->
+                        <div class="bg-white rounded-xl p-3 border border-gray-100 text-[10px] space-y-3 shadow-sm">
+                            <h4 class="font-bold text-gray-700 flex items-center gap-1.5 pb-2 border-b border-gray-50">
+                                <i class="fa-solid fa-sliders text-gray-400"></i> 圖例對照
+                            </h4>
+                            <div class="space-y-2.5 font-medium text-gray-600">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 text-center text-orange-500 font-extrabold text-sm">→</span>
+                                    <span>促銷去程預估</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 text-center text-yellow-500 font-extrabold text-sm">←</span>
+                                    <span>促銷回程預估</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-sm">⇆</span>
+                                    <span class="font-bold text-gray-800">促銷雙向預估</span>
+                                </div>
+                                <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
+                                    <span class="w-6 text-center text-indigo-500 font-extrabold text-sm">→</span>
+                                    <span class="font-bold text-indigo-600">官網去程低價</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 text-center text-purple-500 font-extrabold text-sm">←</span>
+                                    <span class="font-bold text-purple-600">官網回程低價</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-sm">⇆</span>
+                                    <span class="font-bold text-gray-800">官網雙向低價</span>
+                                </div>
+                                <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
+                                    <span class="w-6 h-3 rounded nogo-pattern inline-block border"></span>
+                                    <span class="text-rose-500">無法出國日期</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -429,26 +436,35 @@
 
                 <!-- 右側歷史列表 -->
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 lg:col-span-2 space-y-5 minimal-shadow">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                    
+                    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+                        <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5 shrink-0">
                             <i class="fa-solid fa-folder-open text-gray-400"></i> 歷史促銷紀錄清單
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <button id="btn-collapse-all" class="bg-gray-50 hover:bg-gray-100 text-gray-700 p-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs w-[34px] h-[34px] shrink-0 shadow-sm" title="一鍵折疊/展開所有分組">
+                        
+                        <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-end">
+                            
+                            <!-- 一鍵折疊與分類下拉選單 -->
+                            <button id="btn-collapse-all" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs shadow-sm gap-1.5" title="一鍵折疊/展開所有分組">
                                 <i id="btn-collapse-all-icon" class="fa-solid fa-compress"></i>
+                                <span id="btn-collapse-all-text">全部摺疊</span>
                             </button>
                             
-                            <button id="btn-group-cycle" class="bg-gray-50 hover:bg-gray-100 text-gray-700 p-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs w-[34px] h-[34px] shrink-0 shadow-sm" title="切換分組模式">
-                                <i id="btn-group-cycle-icon" class="fa-solid fa-map-location-dot"></i>
-                            </button>
+                            <select id="record-group-select" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 pr-8 rounded-xl border border-gray-200 transition duration-200 text-xs shadow-sm outline-none cursor-pointer">
+                                <option value="city">依目的地分類</option>
+                                <option value="category">依促銷檔期分類</option>
+                                <option value="none">不分類 (所有紀錄)</option>
+                            </select>
                             
-                            <div class="relative flex items-center max-w-[160px] sm:max-w-[200px] w-full">
+                            <!-- 搜尋欄位，包含專屬清除文字按鈕 -->
+                            <div class="relative flex items-center max-w-full sm:max-w-[200px] flex-grow sm:flex-grow-0">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400 text-[10px]"></i>
                                 <input type="text" id="record-search" placeholder="搜尋城市..." class="w-full border border-gray-200 rounded-xl pl-7 pr-8 py-2 text-[11px] outline-none focus:border-gray-400 bg-gray-50 text-gray-800 transition">
-                                <button id="btn-clear-all" class="absolute right-2.5 text-gray-400 hover:text-rose-500 text-xs font-bold transition duration-200" title="清空全部歷史紀錄">
-                                    <i class="fa-solid fa-xmark"></i>
+                                <button id="btn-clear-search" class="absolute right-2.5 text-gray-400 hover:text-gray-700 text-xs font-bold transition duration-200 hidden" title="清除搜尋文字">
+                                    <i class="fa-solid fa-circle-xmark"></i>
                                 </button>
                             </div>
+
                         </div>
                     </div>
 
@@ -646,7 +662,7 @@
 
         function showConfirm(title, message, onConfirm) {
             const modal = document.getElementById('confirm-modal');
-            document.getElementById('confirm-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-orange-500"></i> ${title}`;
+            document.getElementById('confirm-title').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500"></i> ${title}`;
             document.getElementById('confirm-message').textContent = message;
             modal.classList.remove('hidden');
             activeConfirmCallback = onConfirm;
@@ -696,6 +712,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // 切換分頁導航
             bindClick('nav-dashboard', () => switchTab('dashboard'));
             bindClick('nav-records', () => switchTab('records'));
             bindClick('nav-schedules', () => switchTab('schedules'));
@@ -704,22 +721,50 @@
             bindClick('mob-records', () => switchTab('records'));
             bindClick('mob-schedules', () => switchTab('schedules'));
 
+            // 月曆按鈕
             bindClick('btn-prev-month', () => changeMonth(-1));
             bindClick('btn-next-month', () => changeMonth(1));
-            bindClick('btn-clear-all', confirmClearAllRecords);
             
+            // Firebase與功能操作
             bindClick('btn-toggle-firebase', toggleFirebasePanel);
             bindClick('btn-close-firebase', toggleFirebasePanel);
             bindClick('btn-save-firebase', saveFirebaseConfig);
             bindClick('btn-cancel-edit-sched', cancelEditSchedule);
             bindClick('btn-cancel-edit-record', cancelEditRecord);
             bindClick('btn-collapse-all', toggleAllCollapse);
-            bindClick('btn-group-cycle', toggleGroupMode);
+
+            // 手機版月曆左側說明區塊摺疊功能
+            bindClick('btn-toggle-info', () => {
+                const content = document.getElementById('dashboard-info-content');
+                const icon = document.getElementById('info-toggle-icon');
+                content.classList.toggle('hidden');
+                icon.classList.toggle('fa-chevron-down');
+                icon.classList.toggle('fa-chevron-up');
+            });
+
+            // 歷史紀錄下拉分類選單
+            bindEvent('record-group-select', 'change', (e) => {
+                currentGroupMode = e.target.value;
+                renderRecordsTable();
+            });
 
             bindEvent('calendar-route-select', 'change', updateDashboard);
             bindEvent('calendar-type-select', 'change', updateDashboard);
             bindEvent('calendar-hide-spot', 'change', updateDashboard);
-            bindEvent('record-search', 'input', renderRecordsTable);
+            
+            // 搜尋框輸入時顯示X，X的清除功能
+            bindEvent('record-search', 'input', (e) => {
+                const btn = document.getElementById('btn-clear-search');
+                if(e.target.value.length > 0) btn.classList.remove('hidden');
+                else btn.classList.add('hidden');
+                renderRecordsTable();
+            });
+            bindClick('btn-clear-search', () => {
+                const input = document.getElementById('record-search');
+                input.value = '';
+                document.getElementById('btn-clear-search').classList.add('hidden');
+                renderRecordsTable();
+            });
 
             document.querySelectorAll('input[name="source_type"]').forEach(radio => {
                 radio.addEventListener('change', () => {
@@ -928,12 +973,15 @@
             document.getElementById('fb-projectId').value = config.projectId || "";
             document.getElementById('fb-appId').value = config.appId || "";
             
+            // 初始化下拉選單設定
+            const selectEl = document.getElementById('record-group-select');
+            if (selectEl) selectEl.value = currentGroupMode;
+
             await initFirebase(config);
             await loadStoredData();
             
             populateRouteDropdowns();
             updateDashboard();
-            updateGroupCycleButtonUI();
             renderRecordsTable();
             renderSchedulesList();
         }
@@ -1185,25 +1233,31 @@
                     bgClass = "nogo-pattern text-rose-500 shadow-none";
                 } else if (isAlignedDepart && isAlignedReturn) {
                     if (onlySpotDepart && onlySpotReturn) {
+                        // 官網自查雙向: 靛色至紫色漸層
                         arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-xs">⇆</span>';
                         bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
                     } else {
+                        // 促銷雙向: 橙色至黃色漸層
                         arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-xs">⇆</span>';
                         bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isAlignedDepart) {
                     if (onlySpotDepart) {
+                        // 官網自查去程: 靛色 (Indigo)
                         arrowIndicator = '<span class="text-indigo-500 font-extrabold text-xs">→</span>';
                         bgClass = isDepartFlightDay ? "bg-indigo-50 border-indigo-300 font-bold" : "bg-indigo-50/50 text-gray-400 border-gray-200 line-through";
                     } else {
+                        // 促銷去程: 橙色 (Orange)
                         arrowIndicator = '<span class="text-orange-500 font-extrabold text-xs">→</span>';
                         bgClass = isDepartFlightDay ? "bg-orange-50 border-orange-300 font-bold" : "bg-orange-50/50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isAlignedReturn) {
                     if (onlySpotReturn) {
+                        // 官網自查回程: 紫色 (Purple)
                         arrowIndicator = '<span class="text-purple-500 font-extrabold text-xs">←</span>';
                         bgClass = isReturnFlightDay ? "bg-purple-50 border-purple-300 font-bold" : "bg-purple-50/50 text-gray-400 border-gray-200 line-through";
                     } else {
+                        // 促銷回程: 黃色 (Yellow)
                         arrowIndicator = '<span class="text-yellow-500 font-extrabold text-xs">←</span>';
                         bgClass = isReturnFlightDay ? "bg-yellow-50 border-yellow-300 font-bold" : "bg-yellow-50/50 text-gray-400 border-gray-200 line-through";
                     }
@@ -1225,7 +1279,7 @@
                     const specificFlightChecked = (isAlignedDepart && isAlignedReturn) ? (isDepartFlightDay && isReturnFlightDay) : (isAlignedDepart ? isDepartFlightDay : isReturnFlightDay);
                     if (!specificFlightChecked) iconsHtml += '<i class="fa-solid fa-triangle-exclamation text-rose-400 text-[9px] ml-0.5"></i>';
                 }
-                if (isNogo) iconsHtml = '<span class="text-rose-500 text-[8px] font-bold">✖</span>';
+                if (isNogo) iconsHtml = '<span class="text-rose-500 text-[8px] font-bold">✖ 無法</span>';
 
                 dayCell.innerHTML = `<span class="text-[10px] font-bold block">${day}</span><div class="flex justify-between items-center text-[10px] h-3">${iconsHtml}</div>`;
                 daysGrid.appendChild(dayCell);
@@ -1306,6 +1360,7 @@
                         targetAirportCode = item.data.return_from || item.data.return_to;
                     }
 
+                    // 官網自查顏色調整為 靛色與紫色
                     if (item.data.source_type === 'Spot') {
                         if (item.direction === '去程') {
                             dirBg = "bg-indigo-50 border-indigo-200";
@@ -1324,7 +1379,7 @@
                             <div class="font-bold text-gray-800 flex items-center gap-2 flex-wrap">
                                 <i class="fa-solid fa-arrows-spin ${iconColor}"></i> 
                                 [ ${targetAirportName} ] ${dirArrow} 資訊 
-                                ${item.data.source_type === 'Spot' ? '<span class="text-[9px] bg-white px-1.5 py-0.5 rounded border border-indigo-200 text-indigo-600">官網自查</span>' : ''}
+                                ${item.data.source_type === 'Spot' ? '<span class="text-[9px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-600">官網自查</span>' : ''}
                             </div>
                             <p class="mt-1.5 text-gray-600">歷史對齊日 <strong>${item.originDate} (${originalWd})</strong>。</p>
                             ${specificRouteFlight 
@@ -1525,35 +1580,6 @@
             });
         }
 
-        async function confirmClearAllRecords() {
-            showConfirm("清空所有紀錄", "確定要清空所有的促銷與觀測紀錄嗎？這項動作將完全清除您的資料庫！", async () => {
-                records = [];
-                editingRecordId = null;
-                await syncData();
-                populateRouteDropdowns();
-                updateDashboard();
-                renderRecordsTable();
-                showToast("已清空所有歷史促銷紀錄。", "info");
-            });
-        }
-
-        function toggleGroupMode() {
-            if (currentGroupMode === 'city') currentGroupMode = 'category';
-            else if (currentGroupMode === 'category') currentGroupMode = 'none';
-            else currentGroupMode = 'city';
-            updateGroupCycleButtonUI();
-            renderRecordsTable();
-        }
-
-        function updateGroupCycleButtonUI() {
-            const btnIcon = document.getElementById('btn-group-cycle-icon');
-            const btn = document.getElementById('btn-group-cycle');
-            if (!btnIcon || !btn) return;
-            if (currentGroupMode === 'city') { btnIcon.className = "fa-solid fa-map-location-dot text-gray-700"; btn.title = "當前分組：依目的地城市"; }
-            else if (currentGroupMode === 'category') { btnIcon.className = "fa-solid fa-tags text-gray-700"; btn.title = "當前分組：依促銷檔期"; }
-            else { btnIcon.className = "fa-solid fa-list text-gray-400"; btn.title = "當前分組：不分組"; }
-        }
-
         function toggleAllCollapse() {
             if (currentGroupMode === 'none') return showToast("不分組模式下，無可摺疊之分組", "info");
 
@@ -1590,12 +1616,13 @@
             
             const btnCollapseAll = document.getElementById('btn-collapse-all');
             const btnCollapseIcon = document.getElementById('btn-collapse-all-icon');
+            const btnCollapseText = document.getElementById('btn-collapse-all-text');
             
             if (currentGroupMode === 'none') {
-                btnCollapseAll.className = "bg-gray-50 text-gray-300 p-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs w-[34px] h-[34px] shrink-0 cursor-not-allowed opacity-50";
+                btnCollapseAll.className = "bg-gray-50 text-gray-300 px-3 py-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs shadow-sm gap-1.5 cursor-not-allowed opacity-50";
                 btnCollapseIcon.className = "fa-solid fa-compress text-gray-300";
             } else {
-                btnCollapseAll.className = "bg-gray-50 hover:bg-gray-100 text-gray-700 p-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs w-[34px] h-[34px] shrink-0 cursor-pointer shadow-sm";
+                btnCollapseAll.className = "bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs shadow-sm gap-1.5 cursor-pointer";
             }
 
             const filtered = records.filter(r => {
@@ -1631,8 +1658,11 @@
 
             if (currentGroupMode !== 'none') {
                 const hasExpanded = Object.keys(groups).some(k => collapsedGroups[k] !== true);
-                btnCollapseAll.title = hasExpanded ? "摺疊全部" : "展開全部";
+                btnCollapseAll.title = hasExpanded ? "全部摺疊" : "全部展開";
                 btnCollapseIcon.className = hasExpanded ? "fa-solid fa-compress text-gray-700" : "fa-solid fa-expand text-gray-700";
+                if(btnCollapseText) btnCollapseText.textContent = hasExpanded ? "全部摺疊" : "全部展開";
+            } else {
+                if(btnCollapseText) btnCollapseText.textContent = "展開/摺疊";
             }
 
             container.innerHTML = "";
@@ -1674,8 +1704,8 @@
                             promoBadge = '<span class="bg-gray-50 text-gray-600 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-200">復活節</span>';
                             mPromoBadge = '<span class="bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-gray-200">復活節</span>';
                         } else {
-                            promoBadge = '<span class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-md text-[9px] font-bold border border-indigo-200">一般查價</span>';
-                            mPromoBadge = '<span class="bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-indigo-200">一般查價</span>';
+                            promoBadge = '<span class="bg-gray-50 text-gray-600 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-200">一般查價</span>';
+                            mPromoBadge = '<span class="bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-gray-200">一般查價</span>';
                         }
 
                         const sourceBadge = r.source_type === 'PTT' 
@@ -1691,44 +1721,52 @@
 
                         const isEditingThis = editingRecordId === r.id;
 
+                        // 動態決定側邊與字體顏色 (PTT: 橙黃, Spot: 靛紫)
+                        let departColorClass = r.source_type === 'PTT' ? 'text-orange-500' : 'text-indigo-500';
+                        let returnColorClass = r.source_type === 'PTT' ? 'text-yellow-600' : 'text-purple-600';
+                        let rowEditingClass = r.source_type === 'PTT' ? 'bg-orange-50/30 border-l-4 border-l-orange-400' : 'bg-indigo-50/30 border-l-4 border-l-indigo-400';
+                        let cardEditingClass = r.source_type === 'PTT' ? 'bg-orange-50/20 border-2 border-orange-300' : 'bg-indigo-50/20 border-2 border-indigo-300';
+                        let depBorderClass = r.source_type === 'PTT' ? 'border-orange-300' : 'border-indigo-300';
+                        let retBorderClass = r.source_type === 'PTT' ? 'border-yellow-400' : 'border-purple-300';
+                        
                         rowsHtml += `
-                            <tr class="hover:bg-gray-50/50 transition border-b border-gray-50 ${isEditingThis ? 'bg-orange-50/30 border-l-4 border-l-orange-400' : ''}">
+                            <tr class="hover:bg-gray-50/50 transition border-b border-gray-50 ${isEditingThis ? rowEditingClass : ''}">
                                 <td class="p-3"><div class="flex flex-col gap-1.5 items-start">${promoBadge}${sourceBadge}</div></td>
                                 <td class="p-3">${departInfo}</td>
                                 <td class="p-3">${returnInfo}</td>
                                 <td class="p-3">
-                                    <div class="font-mono text-[10px] text-gray-800 font-semibold mb-1"><span class="text-orange-500">去:</span> NT$${formatPrice(r.depart_price)}</div>
-                                    <div class="font-mono text-[10px] text-gray-800 font-semibold"><span class="text-yellow-600">回:</span> NT$${formatPrice(r.return_price)}</div>
+                                    <div class="font-mono text-[10px] text-gray-800 font-semibold mb-1"><span class="${departColorClass}">去:</span> NT$${formatPrice(r.depart_price)}</div>
+                                    <div class="font-mono text-[10px] text-gray-800 font-semibold"><span class="${returnColorClass}">回:</span> NT$${formatPrice(r.return_price)}</div>
                                 </td>
                                 <td class="p-3 text-center">
-                                    <button data-edit-record="${r.id}" class="${isEditingThis ? 'text-orange-500' : 'text-gray-400'} hover:text-gray-800 p-1.5 rounded" title="編輯這筆紀錄"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button data-edit-record="${r.id}" class="${isEditingThis ? departColorClass : 'text-gray-400'} hover:text-gray-800 p-1.5 rounded" title="編輯這筆紀錄"><i class="fa-solid fa-pen-to-square"></i></button>
                                     <button data-delete-record="${r.id}" class="text-gray-400 hover:text-rose-500 p-1.5 rounded" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         `;
 
                         mobileCardsHtml += `
-                            <div class="bg-white border rounded-xl p-4 space-y-3 shadow-sm border-gray-200 ${isEditingThis ? 'bg-orange-50/20 border-2 border-orange-300' : ''}">
+                            <div class="bg-white border rounded-xl p-4 space-y-3 shadow-sm border-gray-200 ${isEditingThis ? cardEditingClass : ''}">
                                 <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
-                                    <div class="flex items-center gap-1.5">${mPromoBadge}${mSourceBadge}${isEditingThis ? '<span class="bg-orange-100 text-orange-700 text-[8px] px-1.5 rounded-md font-bold">編輯中</span>' : ''}</div>
+                                    <div class="flex items-center gap-1.5">${mPromoBadge}${mSourceBadge}${isEditingThis ? '<span class="bg-gray-100 text-gray-700 text-[8px] px-1.5 rounded-md font-bold border border-gray-200">編輯中</span>' : ''}</div>
                                     <div class="flex items-center gap-1 bg-gray-50 px-1 py-0.5 rounded-lg border border-gray-100">
                                         <button data-edit-record="${r.id}" class="text-gray-500 hover:text-gray-800 p-1.5 rounded"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button>
                                         <button data-delete-record="${r.id}" class="text-gray-500 hover:text-rose-500 p-1.5 rounded"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-4 pb-1">
-                                    <div class="border-l-2 border-orange-300 pl-2">
+                                    <div class="border-l-2 ${depBorderClass} pl-2">
                                         <span class="text-[8px] text-gray-500 block uppercase font-semibold mb-1">去程</span>
                                         ${r.depart_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.depart_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.depart_date}</div>` : `<div class="text-gray-400 italic text-[10px]">無</div>`}
                                     </div>
-                                    <div class="border-l-2 border-yellow-400 pl-2">
+                                    <div class="border-l-2 ${retBorderClass} pl-2">
                                         <span class="text-[8px] text-gray-500 block uppercase font-semibold mb-1">回程</span>
                                         ${r.return_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.return_from)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.return_date}</div>` : `<div class="text-gray-400 italic text-[10px]">無</div>`}
                                     </div>
                                 </div>
                                 <div class="bg-gray-50 p-2.5 rounded-lg flex justify-between items-center text-[10px] border border-gray-100">
                                     <span class="text-gray-500 font-semibold">未稅票價參考</span>
-                                    <div class="font-mono font-bold text-gray-800">去: <span class="text-orange-500">NT$${formatPrice(r.depart_price)}</span> / 回: <span class="text-yellow-600">NT$${formatPrice(r.return_price)}</span></div>
+                                    <div class="font-mono font-bold text-gray-800">去: <span class="${departColorClass}">NT$${formatPrice(r.depart_price)}</span> / 回: <span class="${returnColorClass}">NT$${formatPrice(r.return_price)}</span></div>
                                 </div>
                             </div>
                         `;
