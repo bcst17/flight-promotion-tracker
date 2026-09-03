@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統 v6.6</title>
+    <title>虎航促銷預測系統 v6.7</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -442,25 +442,25 @@
                             <i class="fa-solid fa-folder-open text-gray-400"></i> 歷史促銷紀錄清單
                         </h3>
                         
-                        <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-end">
+                        <div class="flex flex-nowrap items-center gap-1.5 w-full xl:w-auto justify-end overflow-hidden">
                             
                             <!-- 一鍵折疊與分類下拉選單 -->
-                            <button id="btn-collapse-all" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs shadow-sm gap-1.5" title="一鍵折疊/展開所有分組">
+                            <button id="btn-collapse-all" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-[10px] sm:text-xs shadow-sm gap-1 shrink-0 whitespace-nowrap" title="一鍵折疊/展開所有分組">
                                 <i id="btn-collapse-all-icon" class="fa-solid fa-compress"></i>
-                                <span id="btn-collapse-all-text">全部摺疊</span>
+                                <span id="btn-collapse-all-text">摺疊</span>
                             </button>
                             
-                            <select id="record-group-select" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 pr-8 rounded-xl border border-gray-200 transition duration-200 text-xs shadow-sm outline-none cursor-pointer">
-                                <option value="city">依目的地分類</option>
-                                <option value="category">依促銷檔期分類</option>
-                                <option value="none">不分類 (所有紀錄)</option>
+                            <select id="record-group-select" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1.5 sm:px-3 sm:py-2 pr-6 sm:pr-8 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 text-[10px] sm:text-xs shadow-sm outline-none cursor-pointer shrink-0 whitespace-nowrap">
+                                <option value="city">目的地</option>
+                                <option value="category">檔期</option>
+                                <option value="none">所有紀錄</option>
                             </select>
                             
                             <!-- 搜尋欄位，包含專屬清除文字按鈕 -->
-                            <div class="relative flex items-center max-w-full sm:max-w-[200px] flex-grow sm:flex-grow-0">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-400 text-[10px]"></i>
-                                <input type="text" id="record-search" placeholder="搜尋城市..." class="w-full border border-gray-200 rounded-xl pl-7 pr-8 py-2 text-[11px] outline-none focus:border-gray-400 bg-gray-50 text-gray-800 transition">
-                                <button id="btn-clear-search" class="absolute right-2.5 text-gray-400 hover:text-gray-700 text-xs font-bold transition duration-200 hidden" title="清除搜尋文字">
+                            <div class="relative flex items-center flex-grow min-w-[80px]">
+                                <i class="fa-solid fa-magnifying-glass absolute left-2 sm:left-3 text-gray-400 text-[10px]"></i>
+                                <input type="text" id="record-search" placeholder="搜尋城市..." class="w-full border border-gray-200 rounded-lg sm:rounded-xl pl-6 sm:pl-7 pr-6 sm:pr-8 py-1.5 sm:py-2 text-[10px] sm:text-[11px] outline-none focus:border-gray-400 bg-gray-50 text-gray-800 transition min-w-0">
+                                <button id="btn-clear-search" class="absolute right-2 sm:right-2.5 text-gray-400 hover:text-gray-700 text-xs font-bold transition duration-200 hidden" title="清除搜尋文字">
                                     <i class="fa-solid fa-circle-xmark"></i>
                                 </button>
                             </div>
@@ -554,7 +554,7 @@
     <!-- 頁尾 (淺色系) -->
     <footer class="bg-white text-gray-400 text-[10px] py-8 border-t border-gray-200 mt-auto pb-24 md:pb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-1.5">
-            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.6</p>
+            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.7</p>
             <p class="text-[9px] text-gray-400">本系統與台灣虎航官方無關，預測數據僅供旅日機票規劃參考</p>
         </div>
     </footer>
@@ -1619,10 +1619,10 @@
             const btnCollapseText = document.getElementById('btn-collapse-all-text');
             
             if (currentGroupMode === 'none') {
-                btnCollapseAll.className = "bg-gray-50 text-gray-300 px-3 py-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs shadow-sm gap-1.5 cursor-not-allowed opacity-50";
+                btnCollapseAll.className = "bg-gray-50 text-gray-300 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-[10px] sm:text-xs shadow-sm gap-1 shrink-0 whitespace-nowrap cursor-not-allowed opacity-50";
                 btnCollapseIcon.className = "fa-solid fa-compress text-gray-300";
             } else {
-                btnCollapseAll.className = "bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-xs shadow-sm gap-1.5 cursor-pointer";
+                btnCollapseAll.className = "bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-[10px] sm:text-xs shadow-sm gap-1 shrink-0 whitespace-nowrap cursor-pointer";
             }
 
             const filtered = records.filter(r => {
@@ -1658,11 +1658,11 @@
 
             if (currentGroupMode !== 'none') {
                 const hasExpanded = Object.keys(groups).some(k => collapsedGroups[k] !== true);
-                btnCollapseAll.title = hasExpanded ? "全部摺疊" : "全部展開";
+                btnCollapseAll.title = hasExpanded ? "摺疊" : "展開";
                 btnCollapseIcon.className = hasExpanded ? "fa-solid fa-compress text-gray-700" : "fa-solid fa-expand text-gray-700";
-                if(btnCollapseText) btnCollapseText.textContent = hasExpanded ? "全部摺疊" : "全部展開";
+                if(btnCollapseText) btnCollapseText.textContent = hasExpanded ? "摺疊" : "展開";
             } else {
-                if(btnCollapseText) btnCollapseText.textContent = "展開/摺疊";
+                if(btnCollapseText) btnCollapseText.textContent = "摺疊";
             }
 
             container.innerHTML = "";
