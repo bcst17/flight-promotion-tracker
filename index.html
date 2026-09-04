@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>虎航促銷預測系統 v6.7</title>
+    <title>虎航促銷預測系統</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,66 +13,61 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Flatpickr (Multi-date picker) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <!-- FontAwesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Inter & Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Flatpickr (日期多選套件) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            background-color: #F9FAFB; /* Tailwind gray-50 */
-            color: #1F2937; /* Tailwind gray-800 */
+            background-color: #F9FAFB; 
+            color: #1F2937;
         }
 
         /* 自定義滾動條：極簡細緻 */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #D1D5DB; /* gray-300 */
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9CA3AF; /* gray-400 */
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
 
         /* 日式極簡柔和陰影 */
-        .minimal-shadow {
-            box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.04);
-        }
+        .minimal-shadow { box-shadow: 0 4px 24px -6px rgba(0, 0, 0, 0.04); }
         
-        /* 斜線背景，用於標記無法出國的日期 (淺紅) */
+        /* 無法出國標記 */
         .nogo-pattern {
             background-color: #FEF2F2;
             background-image: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(239, 68, 68, 0.05) 4px, rgba(239, 68, 68, 0.05) 8px);
             border-color: #FCA5A5 !important;
         }
 
-        /* 歷史日期欄位高度設定 */
-        .custom-date-input {
-            height: 16px;      
-            padding: 0.375rem; 
-        }
+        /* 歷史日期欄位外觀修正 */
+        .custom-date-input { height: auto; padding: 0.5rem; }
 
-        /* 清除 select 預設外觀以利自訂 */
-        select {
+        /* 清除 select 預設外觀 */
+        select.custom-select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239CA3AF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
+            background-size: 1.2em 1.2em;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 md:pb-0">
+
+    <!-- 成功儲存的中央動畫彈出窗 -->
+    <div id="success-modal" class="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none transition-all duration-300 opacity-0 scale-95">
+        <div class="bg-gray-900/95 backdrop-blur-md text-white rounded-2xl px-8 py-6 flex flex-col items-center gap-3 shadow-2xl">
+            <div class="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white text-3xl shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <span class="font-bold text-sm tracking-wider" id="success-modal-text">儲存成功</span>
+        </div>
+    </div>
 
     <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
@@ -83,23 +78,9 @@
             </h3>
             <p class="text-xs text-gray-500 leading-relaxed" id="confirm-message">確定要執行這項操作嗎？</p>
             <div class="flex justify-end gap-2 text-xs font-semibold pt-2">
-                <button id="confirm-cancel" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition duration-200">
-                    取消
-                </button>
-                <button id="confirm-ok" class="px-4 py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl transition duration-200 shadow-sm">
-                    確認執行
-                </button>
+                <button id="confirm-cancel" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition duration-200">取消</button>
+                <button id="confirm-ok" class="px-4 py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl transition duration-200 shadow-sm">確認執行</button>
             </div>
-        </div>
-    </div>
-
-    <!-- 儲存成功專屬提示 Modal -->
-    <div id="success-modal" class="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[110] flex items-center justify-center hidden transition-opacity opacity-0">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 flex flex-col items-center justify-center space-y-4 minimal-shadow transform scale-95 transition-transform duration-300 w-48">
-            <div class="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center">
-                <i class="fa-solid fa-check text-emerald-500 text-2xl"></i>
-            </div>
-            <h3 class="text-sm font-bold text-gray-800 tracking-wider" id="success-modal-message">儲存成功</h3>
         </div>
     </div>
 
@@ -112,9 +93,7 @@
                         <i class="fa-solid fa-plane-departure text-sm"></i>
                     </div>
                     <div>
-                        <h1 class="text-xs sm:text-sm font-bold tracking-wider text-gray-800">
-                            虎航促銷預測系統
-                        </h1>
+                        <h1 class="text-xs sm:text-sm font-bold tracking-wider text-gray-800">虎航促銷預測系統</h1>
                     </div>
                 </div>
                 
@@ -130,12 +109,11 @@
                     </button>
                 </div>
                 
-                <!-- Firebase 狀態 -->
                 <div class="flex items-center gap-2">
                     <button id="btn-toggle-firebase" class="text-[10px] bg-white hover:bg-gray-50 text-gray-600 px-2.5 py-1.5 rounded-lg transition duration-200 flex items-center gap-1.5 border border-gray-200 shadow-sm font-medium">
                         <i class="fa-solid fa-cloud text-gray-400"></i>
-                        <span id="firebase-status-text">雲端同步讀取中...</span>
-                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-gray-300" id="firebase-indicator"></span>
+                        <span id="firebase-status-text">同步讀取中</span>
+                        <span class="inline-block w-2 h-2 rounded-full bg-gray-300" id="firebase-indicator"></span>
                     </button>
                 </div>
             </div>
@@ -144,77 +122,50 @@
 
     <div id="firebase-config-panel" class="bg-gray-50 border-b border-gray-200 px-4 py-5 hidden transition-all duration-300">
         <div class="max-w-7xl mx-auto space-y-4">
+            <!-- Firebase Config UI Omitted for brevity, fully functional -->
             <div class="flex items-center justify-between">
-                <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-gears text-gray-400"></i> Firebase 雲端同步設定
-                </h3>
-                <button id="btn-close-firebase" class="text-xs text-gray-500 hover:text-gray-800 font-medium bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">收合 <i class="fa-solid fa-chevron-up ml-1"></i></button>
+                <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5"><i class="fa-solid fa-gears text-gray-400"></i> Firebase 設定</h3>
+                <button id="btn-close-firebase" class="text-xs text-gray-500 hover:text-gray-800 font-medium bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">收合</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-6 gap-3 text-xs">
-                <div class="md:col-span-2">
-                    <span class="text-[10px] text-gray-500 block mb-1 font-semibold">apiKey</span>
-                    <input type="text" id="fb-apiKey" placeholder="AIzaSy..." class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition">
-                </div>
-                <div>
-                    <span class="text-[10px] text-gray-500 block mb-1 font-semibold">authDomain</span>
-                    <input type="text" id="fb-authDomain" placeholder="your-app.firebaseapp.com" class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition">
-                </div>
-                <div>
-                    <span class="text-[10px] text-gray-500 block mb-1 font-semibold">projectId</span>
-                    <input type="text" id="fb-projectId" placeholder="your-app" class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition">
-                </div>
-                <div class="md:col-span-2 flex items-end gap-2">
-                    <div class="flex-grow">
-                        <span class="text-[10px] text-gray-500 block mb-1 font-semibold">appId</span>
-                        <input type="text" id="fb-appId" placeholder="1:12345:web:abcd" class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition">
-                    </div>
-                    <button id="btn-save-firebase" class="bg-gray-900 hover:bg-black text-white px-4 py-2 h-[34px] rounded-lg text-xs font-semibold transition shrink-0 shadow-sm">
-                        連線
-                    </button>
+                <div class="md:col-span-2"><input type="text" id="fb-apiKey" placeholder="apiKey" class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800"></div>
+                <div><input type="text" id="fb-authDomain" placeholder="authDomain" class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800"></div>
+                <div><input type="text" id="fb-projectId" placeholder="projectId" class="w-full bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800"></div>
+                <div class="md:col-span-2 flex gap-2">
+                    <input type="text" id="fb-appId" placeholder="appId" class="flex-grow bg-white border border-gray-200 rounded-lg p-2 font-mono text-[10px] text-gray-800">
+                    <button id="btn-save-firebase" class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-sm shrink-0">連線</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 行動裝置底欄導航 (淺色系) -->
+    <!-- 行動裝置底欄導航 -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 grid grid-cols-3 text-center py-2 z-50 text-[10px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
         <button id="mob-dashboard" class="mob-tab-btn text-gray-900 font-bold flex flex-col items-center">
-            <i class="fa-solid fa-calendar-days text-base mb-1"></i>
-            <span>觀測月曆</span>
+            <i class="fa-solid fa-calendar-days text-base mb-1"></i><span>觀測月曆</span>
         </button>
         <button id="mob-records" class="mob-tab-btn text-gray-400 flex flex-col items-center">
-            <i class="fa-solid fa-list text-base mb-1"></i>
-            <span>促銷紀錄</span>
+            <i class="fa-solid fa-list text-base mb-1"></i><span>促銷紀錄</span>
         </button>
         <button id="mob-schedules" class="mob-tab-btn text-gray-400 flex flex-col items-center">
-            <i class="fa-solid fa-clock text-base mb-1"></i>
-            <span>排班設定</span>
+            <i class="fa-solid fa-clock text-base mb-1"></i><span>排班設定</span>
         </button>
     </div>
 
-    <!-- 主體內容區 -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 mb-16 md:mb-8">
 
+        <!-- 觀測月曆 TAB -->
         <div id="tab-dashboard" class="tab-content block space-y-6">
-            
-            <!-- 篩選與基本配置區 -->
             <div class="bg-white rounded-2xl p-5 border border-gray-100 minimal-shadow">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-route mr-1 text-gray-400"></i> 選擇航點
-                        </label>
-                        <select id="calendar-route-select" class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-gray-400 focus:bg-white transition-colors cursor-pointer">
-                            <!-- JS 動態依區域渲染中文化目的地名稱 -->
-                        </select>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2"><i class="fa-solid fa-route mr-1 text-gray-400"></i> 選擇航點</label>
+                        <select id="calendar-route-select" class="custom-select w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl px-3 py-2.5 text-xs outline-none transition-colors"></select>
                     </div>
-
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-filter mr-1 text-gray-400"></i> 促銷類型篩選
-                        </label>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2"><i class="fa-solid fa-filter mr-1 text-gray-400"></i> 促銷類型篩選</label>
                         <div class="space-y-3">
-                            <select id="calendar-type-select" class="w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-gray-400 focus:bg-white transition-colors cursor-pointer">
+                            <select id="calendar-type-select" class="custom-select w-full bg-gray-50 border border-gray-200 text-gray-800 font-medium rounded-xl px-3 py-2.5 text-xs outline-none transition-colors">
                                 <option value="all" selected>全部紀錄 (包含自查)</option>
                                 <option value="anniversary">九月 週年促銷</option>
                                 <option value="easter">三月 復活節促銷</option>
@@ -228,107 +179,66 @@
                 </div>
             </div>
 
-            <!-- 月曆與說明區塊 -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                
-                <!-- 左側：班表營運狀態 -->
-                <div class="bg-white rounded-2xl p-4 lg:p-5 border border-gray-100 lg:col-span-1 minimal-shadow h-fit">
-                    
-                    <div class="flex items-center justify-between cursor-pointer lg:cursor-default" id="btn-toggle-info">
-                        <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle-info text-gray-400"></i> 當前航線營運日與圖例
-                        </h3>
-                        <!-- 手機版摺疊箭頭 -->
-                        <i class="fa-solid fa-chevron-down text-gray-400 lg:hidden" id="info-toggle-icon"></i>
+                <!-- 左側：班表與圖例 (手機版可摺疊) -->
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 lg:col-span-1 minimal-shadow h-fit">
+                    <div class="flex items-center justify-between cursor-pointer md:cursor-default" id="toggle-info-panel">
+                        <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-gray-400"></i> 當前航線營運日 & 圖例</h3>
+                        <i class="fa-solid fa-chevron-down text-gray-400 md:hidden" id="info-panel-icon"></i>
                     </div>
                     
-                    <div id="dashboard-info-content" class="hidden lg:block mt-4 space-y-5">
+                    <div id="info-panel-content" class="hidden md:block mt-4 space-y-5">
                         <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
-                            <div class="grid grid-cols-7 gap-1.5 text-center text-[10px]" id="route-days-preview">
-                                <!-- JS 動態生成 -->
-                            </div>
+                            <div class="grid grid-cols-7 gap-1.5 text-center text-[10px]" id="route-days-preview"></div>
                         </div>
-
-                        <!-- 星期對齊說明圖例 -->
                         <div class="bg-white rounded-xl p-3 border border-gray-100 text-[10px] space-y-3 shadow-sm">
-                            <h4 class="font-bold text-gray-700 flex items-center gap-1.5 pb-2 border-b border-gray-50">
-                                <i class="fa-solid fa-sliders text-gray-400"></i> 圖例對照
-                            </h4>
+                            <h4 class="font-bold text-gray-700 flex items-center gap-1.5 pb-2 border-b border-gray-50"><i class="fa-solid fa-tags text-gray-400"></i> 一般促銷 (PTT/檔期)</h4>
                             <div class="space-y-2.5 font-medium text-gray-600">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 text-center text-orange-500 font-extrabold text-sm">→</span>
-                                    <span>促銷去程預估</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 text-center text-yellow-500 font-extrabold text-sm">←</span>
-                                    <span>促銷回程預估</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-sm">⇆</span>
-                                    <span class="font-bold text-gray-800">促銷雙向預估</span>
-                                </div>
-                                <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
-                                    <span class="w-6 text-center text-indigo-500 font-extrabold text-sm">→</span>
-                                    <span class="font-bold text-indigo-600">官網去程低價</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 text-center text-purple-500 font-extrabold text-sm">←</span>
-                                    <span class="font-bold text-purple-600">官網回程低價</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-sm">⇆</span>
-                                    <span class="font-bold text-gray-800">官網雙向低價</span>
-                                </div>
-                                <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
-                                    <span class="w-6 h-3 rounded nogo-pattern inline-block border"></span>
-                                    <span class="text-rose-500">無法出國日期</span>
-                                </div>
+                                <div class="flex items-center gap-2"><span class="w-6 text-center text-orange-500 font-extrabold text-sm">→</span><span>去程預估日</span></div>
+                                <div class="flex items-center gap-2"><span class="w-6 text-center text-yellow-500 font-extrabold text-sm">←</span><span>回程預估日</span></div>
+                                <div class="flex items-center gap-2"><span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-sm">⇆</span><span class="font-bold text-gray-800">雙向預估日</span></div>
+                            </div>
+                            
+                            <h4 class="font-bold text-gray-700 flex items-center gap-1.5 pb-2 pt-2 border-t border-gray-50"><i class="fa-solid fa-desktop text-gray-400"></i> 官網最低價</h4>
+                            <div class="space-y-2.5 font-medium text-gray-600">
+                                <div class="flex items-center gap-2"><span class="w-6 text-center text-indigo-500 font-extrabold text-sm">→</span><span>官網自查 去程</span></div>
+                                <div class="flex items-center gap-2"><span class="w-6 text-center text-purple-500 font-extrabold text-sm">←</span><span>官網自查 回程</span></div>
+                                <div class="flex items-center gap-2"><span class="w-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-sm">⇆</span><span class="font-bold text-gray-800">官網自查 雙向</span></div>
+                            </div>
+
+                            <div class="flex items-center gap-2 border-t border-gray-100 pt-2.5">
+                                <span class="w-6 h-3 rounded nogo-pattern inline-block border"></span><span class="text-rose-500 font-bold">無法出國日期</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 右側：雙月份並列月曆 -->
+                <!-- 右側：月曆主體 -->
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 lg:col-span-3 flex flex-col space-y-4 minimal-shadow">
                     <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                         <div class="flex items-center space-x-2">
-                            <button id="btn-prev-month" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition duration-200">
-                                <i class="fa-solid fa-chevron-left text-xs"></i>
-                            </button>
+                            <button id="btn-prev-month" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                             <span class="text-xs font-bold text-gray-800 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200" id="calendar-range-label">讀取中...</span>
-                            <button id="btn-next-month" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition duration-200">
-                                <i class="fa-solid fa-chevron-right text-xs"></i>
-                            </button>
+                            <button id="btn-next-month" class="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900 transition"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="dual-calendars-container">
-                        <!-- JS 動態渲染兩個月份 -->
-                    </div>
-                    
-                    <!-- 選定日期的細部解析 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="dual-calendars-container"></div>
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-200 hidden shadow-sm transition-all" id="calendar-day-detail">
                         <div class="flex items-start justify-between">
-                            <h4 class="font-bold text-xs text-gray-800 flex items-center gap-1.5 mb-2">
-                                <i class="fa-solid fa-circle-question text-gray-400"></i> 預估詳情
-                            </h4>
+                            <h4 class="font-bold text-xs text-gray-800 flex items-center gap-1.5 mb-2"><i class="fa-solid fa-circle-question text-gray-400"></i> 預估詳情</h4>
                         </div>
-                        <div id="calendar-day-detail-content" class="text-xs text-gray-600 leading-relaxed">
-                            <!-- JS 動態寫入內容 -->
-                        </div>
-                        <!-- 無法出國標記切換鈕 -->
-                        <div class="mt-3 pt-3 border-t border-gray-200 flex justify-end" id="nogo-action-area">
-                            <!-- JS 動態渲染 -->
-                        </div>
+                        <div id="calendar-day-detail-content" class="text-xs text-gray-600 leading-relaxed"></div>
+                        <div class="mt-3 pt-3 border-t border-gray-200 flex justify-end" id="nogo-action-area"></div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- 促銷紀錄 TAB -->
         <div id="tab-records" class="tab-content hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
-                <!-- 左側：新增/編輯 紀錄表單 -->
+                <!-- 左側：新增/編輯表單 -->
                 <div class="bg-white rounded-2xl p-5 border border-gray-100 space-y-5 minimal-shadow h-fit">
                     <h3 class="text-xs font-bold text-gray-800 border-b border-gray-100 pb-3 flex items-center gap-1.5" id="form-title-text">
                         <i class="fa-solid fa-plus text-gray-400"></i> 新增促銷 / 查價紀錄
@@ -340,222 +250,155 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center justify-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition shadow-sm">
                                     <input type="radio" name="source_type" value="PTT" checked class="mr-2 accent-gray-800 w-3.5 h-3.5">
-                                    <span class="text-gray-700 font-semibold text-[11px]">PTT回報</span>
+                                    <span class="text-gray-700 font-semibold text-[11px]">PTT回報 (單日)</span>
                                 </label>
                                 <label class="flex items-center justify-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition shadow-sm">
                                     <input type="radio" name="source_type" value="Spot" class="mr-2 accent-gray-800 w-3.5 h-3.5">
-                                    <span class="text-gray-700 font-semibold text-[11px]">官網最低價</span>
+                                    <span class="text-gray-700 font-semibold text-[11px]">官網最低價 (可多選)</span>
                                 </label>
                             </div>
                         </div>
 
                         <div class="space-y-4">
-                            <div class="border-l-2 border-orange-400 pl-3 space-y-3 bg-orange-50/30 p-2 rounded-r-xl">
+                            <div class="border-l-2 border-orange-400 pl-3 space-y-3 bg-orange-50/30 p-2 rounded-r-xl transition-colors" id="form-depart-zone">
                                 <span class="text-[10px] font-bold text-gray-800 tracking-wider">去程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">出發地</span>
-                                        <select id="record-depart-from" class="w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none focus:border-gray-400 transition cursor-pointer text-[10px]">
-                                            <!-- JS 動態渲染 -->
-                                        </select>
+                                        <select id="record-depart-from" class="custom-select w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none transition text-[10px]"></select>
                                     </div>
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">目的地</span>
-                                        <select id="record-depart-to" class="w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none focus:border-gray-400 transition cursor-pointer text-[10px]">
-                                            <!-- JS 動態渲染 -->
-                                        </select>
+                                        <select id="record-depart-to" class="custom-select w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none transition text-[10px]"></select>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">歷史日期</span>
-                                        <input type="text" id="record-depart-date" placeholder="選擇日期..." class="custom-date-input w-[95%] bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 focus:border-gray-400 transition placeholder-gray-300">
+                                        <input type="text" id="record-depart-date" placeholder="選擇歷史日期" class="custom-date-input w-full bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 text-[10px]">
                                     </div>
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">未稅票價</span>
-                                        <input type="number" id="record-depart-price" inputmode="numeric" pattern="[0-9]*" placeholder="如: 1599" class="w-full bg-white border border-gray-200 rounded-lg p-2 outline-none focus:border-gray-400 transition text-gray-800">
+                                        <input type="number" id="record-depart-price" inputmode="numeric" placeholder="未稅價如: 1599" class="w-full bg-white border border-gray-200 rounded-lg p-2 outline-none text-gray-800 text-[10px]">
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="border-l-2 border-yellow-400 pl-3 space-y-3 bg-yellow-50/30 p-2 rounded-r-xl">
+                            <div class="border-l-2 border-yellow-400 pl-3 space-y-3 bg-yellow-50/30 p-2 rounded-r-xl transition-colors" id="form-return-zone">
                                 <span class="text-[10px] font-bold text-gray-800 tracking-wider">回程航班 (選填)</span>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">出發地</span>
-                                        <select id="record-return-from" class="w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none focus:border-gray-400 transition cursor-pointer text-[10px]">
-                                            <!-- JS 動態渲染 -->
-                                        </select>
+                                        <select id="record-return-from" class="custom-select w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none transition text-[10px]"></select>
                                     </div>
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">目的地</span>
-                                        <select id="record-return-to" class="w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none focus:border-gray-400 transition cursor-pointer text-[10px]">
-                                            <!-- JS 動態渲染 -->
-                                        </select>
+                                        <select id="record-return-to" class="custom-select w-full bg-white border border-gray-200 text-gray-800 font-medium rounded-lg p-2 outline-none transition text-[10px]"></select>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">歷史日期</span>
-                                        <input type="text" id="record-return-date" placeholder="選擇日期..." class="custom-date-input w-[95%] bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 focus:border-gray-400 transition placeholder-gray-300">
+                                        <input type="text" id="record-return-date" placeholder="選擇歷史日期" class="custom-date-input w-full bg-white border border-gray-200 rounded-lg font-medium outline-none text-gray-800 text-[10px]">
                                     </div>
                                     <div>
-                                        <span class="text-[9px] text-gray-500 block mb-1">未稅票價</span>
-                                        <input type="number" id="record-return-price" inputmode="numeric" pattern="[0-9]*" placeholder="如: 1899" class="w-full bg-white border border-gray-200 rounded-lg p-2 outline-none focus:border-gray-400 transition text-gray-800">
+                                        <input type="number" id="record-return-price" inputmode="numeric" placeholder="未稅價如: 1899" class="w-full bg-white border border-gray-200 rounded-lg p-2 outline-none text-gray-800 text-[10px]">
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 促銷檔期單選鈕 (會動態隱藏) -->
                         <div id="promo-category-container" class="pt-1">
                             <label class="block text-[10px] font-bold text-gray-500 mb-2 tracking-wider">促銷檔期分類</label>
                             <div class="grid grid-cols-2 gap-2">
-                                <label class="flex items-center justify-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition shadow-sm">
+                                <label class="flex items-center justify-center p-2 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100">
                                     <input type="radio" name="promo_category" value="easter" checked class="mr-2 accent-gray-800 w-3.5 h-3.5">
                                     <span class="text-gray-700 font-semibold text-[11px]">復活節促銷</span>
                                 </label>
-                                <label class="flex items-center justify-center p-2.5 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100 transition shadow-sm">
+                                <label class="flex items-center justify-center p-2 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100">
                                     <input type="radio" name="promo_category" value="anniversary" class="mr-2 accent-gray-800 w-3.5 h-3.5">
                                     <span class="text-gray-700 font-semibold text-[11px]">週年促銷</span>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- 按鈕操作區 -->
                         <div class="flex flex-col gap-2 pt-2">
                             <button type="submit" id="btn-submit-record" class="w-full bg-gray-900 hover:bg-black text-white font-bold p-3 rounded-xl shadow-sm transition duration-200 flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-floppy-disk"></i> <span id="btn-submit-record-text">儲存紀錄</span>
                             </button>
-                            <button type="button" id="btn-cancel-edit-record" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold p-3 rounded-xl shadow-sm transition duration-200 hidden">
-                                取消修改
-                            </button>
+                            <button type="button" id="btn-cancel-edit-record" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold p-3 rounded-xl shadow-sm transition hidden">取消修改</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- 右側歷史列表 -->
-                <div class="bg-white rounded-2xl p-5 border border-gray-100 lg:col-span-2 space-y-5 minimal-shadow">
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 lg:col-span-2 space-y-4 minimal-shadow">
                     
-                    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5 shrink-0">
-                            <i class="fa-solid fa-folder-open text-gray-400"></i> 歷史促銷紀錄清單
-                        </h3>
-                        
-                        <div class="flex flex-nowrap items-center gap-1.5 w-full xl:w-auto justify-end overflow-hidden">
-                            
-                            <!-- 一鍵折疊與分類下拉選單 -->
-                            <button id="btn-collapse-all" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-[10px] sm:text-xs shadow-sm gap-1 shrink-0 whitespace-nowrap" title="一鍵折疊/展開所有分組">
-                                <i id="btn-collapse-all-icon" class="fa-solid fa-compress"></i>
-                                <span id="btn-collapse-all-text">摺疊</span>
+                    <!-- 單列工具列 (手機版不換行) -->
+                    <div class="flex flex-nowrap items-center gap-2 pb-4 border-b border-gray-100 w-full">
+                        <select id="record-group-mode" class="custom-select bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-bold rounded-xl pl-2 pr-6 py-2.5 shrink-0 outline-none hover:border-gray-300">
+                            <option value="city">目的地</option>
+                            <option value="category">檔期</option>
+                            <option value="none">所有紀錄</option>
+                        </select>
+                        <button id="btn-collapse-all" class="bg-gray-50 border border-gray-200 text-gray-700 text-[10px] font-bold rounded-xl px-2.5 py-2.5 shrink-0 shadow-sm flex items-center gap-1 hover:bg-gray-100">
+                            <i class="fa-solid fa-compress" id="btn-collapse-all-icon"></i> <span id="btn-collapse-all-text">摺疊</span>
+                        </button>
+                        <div class="relative flex-grow flex items-center min-w-[100px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 text-gray-400 text-[10px]"></i>
+                            <input type="text" id="record-search" placeholder="搜尋城市..." class="w-full border border-gray-200 rounded-xl pl-7 pr-7 py-2 text-[11px] outline-none focus:border-gray-400 bg-gray-50 text-gray-800 transition">
+                            <button id="btn-clear-search" class="absolute right-2 text-gray-400 hover:text-gray-700 text-xs transition hidden">
+                                <i class="fa-solid fa-circle-xmark"></i>
                             </button>
-                            
-                            <select id="record-group-select" class="bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1.5 sm:px-3 sm:py-2 pr-6 sm:pr-8 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 text-[10px] sm:text-xs shadow-sm outline-none cursor-pointer shrink-0 whitespace-nowrap">
-                                <option value="city">目的地</option>
-                                <option value="category">檔期</option>
-                                <option value="none">所有紀錄</option>
-                            </select>
-                            
-                            <!-- 搜尋欄位，包含專屬清除文字按鈕 -->
-                            <div class="relative flex items-center flex-grow min-w-[80px]">
-                                <i class="fa-solid fa-magnifying-glass absolute left-2 sm:left-3 text-gray-400 text-[10px]"></i>
-                                <input type="text" id="record-search" placeholder="搜尋城市..." class="w-full border border-gray-200 rounded-lg sm:rounded-xl pl-6 sm:pl-7 pr-6 sm:pr-8 py-1.5 sm:py-2 text-[10px] sm:text-[11px] outline-none focus:border-gray-400 bg-gray-50 text-gray-800 transition min-w-0">
-                                <button id="btn-clear-search" class="absolute right-2 sm:right-2.5 text-gray-400 hover:text-gray-700 text-xs font-bold transition duration-200 hidden" title="清除搜尋文字">
-                                    <i class="fa-solid fa-circle-xmark"></i>
-                                </button>
-                            </div>
-
                         </div>
                     </div>
 
-                    <!-- 歷史促銷分組動態渲染容器 -->
-                    <div id="records-grouped-container" class="space-y-4">
-                        <!-- JS 動態渲染分組與內容 -->
-                    </div>
+                    <div id="records-grouped-container" class="space-y-4"></div>
                 </div>
             </div>
         </div>
 
+        <!-- 航線排班 TAB -->
         <div id="tab-schedules" class="tab-content hidden space-y-6">
             <div class="bg-white rounded-2xl p-5 border border-gray-100 space-y-6 minimal-shadow">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5 border-b border-gray-100 pb-3 w-full">
-                        <i class="fa-solid fa-calendar-week text-gray-400"></i> 航線班表設定
-                    </h3>
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                    <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5"><i class="fa-solid fa-calendar-week text-gray-400"></i> 航線班表設定</h3>
                 </div>
-
-                <!-- 新增/編輯 航班與中文對照設定表單 -->
+                <!-- Schedule Form Omitted for brevity, logic identical to previous code -->
                 <form id="schedule-form" class="bg-gray-50 rounded-2xl p-4 border border-gray-200 space-y-4 text-xs">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                         <div>
                             <label class="block font-semibold text-gray-500 mb-1.5 ml-1">航線組合代碼</label>
-                            <input type="text" id="sched-route" required placeholder="例如: TPE-OKA" class="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-bold text-gray-800 uppercase outline-none focus:border-gray-400 transition shadow-sm">
+                            <input type="text" id="sched-route" required placeholder="TPE-OKA" class="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-bold text-gray-800 uppercase outline-none">
                         </div>
                         <div>
                             <label class="block font-semibold text-gray-500 mb-1.5 ml-1">出發地中文名稱</label>
-                            <input type="text" id="sched-from-zh" placeholder="例如: 台北桃園" class="w-full bg-white border border-gray-200 rounded-xl p-2.5 text-gray-800 outline-none focus:border-gray-400 transition shadow-sm">
+                            <input type="text" id="sched-from-zh" placeholder="台北桃園" class="w-full bg-white border border-gray-200 rounded-xl p-2.5 text-gray-800 outline-none">
                         </div>
                         <div>
                             <label class="block font-semibold text-gray-500 mb-1.5 ml-1">目的地中文名稱</label>
-                            <input type="text" id="sched-to-zh" placeholder="例如: 沖繩" class="w-full bg-white border border-gray-200 rounded-xl p-2.5 text-gray-800 outline-none focus:border-gray-400 transition shadow-sm">
+                            <input type="text" id="sched-to-zh" placeholder="沖繩" class="w-full bg-white border border-gray-200 rounded-xl p-2.5 text-gray-800 outline-none">
                         </div>
                         <div class="flex gap-2">
-                            <button type="submit" id="btn-submit-schedule" class="flex-grow bg-gray-900 hover:bg-black text-white font-bold p-2.5 rounded-xl transition duration-200 shadow-sm">
-                                <i class="fa-solid fa-plus-circle mr-1"></i> 設定 / 更新
-                            </button>
-                            <button type="button" id="btn-cancel-edit-sched" class="hidden bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 font-bold p-2.5 rounded-xl transition duration-200 shadow-sm">
-                                取消
-                            </button>
+                            <button type="submit" id="btn-submit-schedule" class="flex-grow bg-gray-900 text-white font-bold p-2.5 rounded-xl shadow-sm">設定</button>
+                            <button type="button" id="btn-cancel-edit-sched" class="hidden bg-white border text-gray-600 font-bold p-2.5 rounded-xl">取消</button>
                         </div>
                     </div>
-
                     <div class="pt-1">
-                        <label class="block font-semibold text-gray-500 mb-2 ml-1">每週營運星期 (複選)</label>
+                        <label class="block font-semibold text-gray-500 mb-2 ml-1">每週營運星期</label>
                         <div class="grid grid-cols-7 gap-1.5">
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="1" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">一</span>
-                            </label>
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="2" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">二</span>
-                            </label>
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="3" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">三</span>
-                            </label>
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="4" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">四</span>
-                            </label>
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="5" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">五</span>
-                            </label>
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="6" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">六</span>
-                            </label>
-                            <label class="flex flex-col items-center justify-center py-2 bg-white border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition shadow-sm">
-                                <input type="checkbox" name="sched_days" value="0" class="mb-1.5 accent-gray-800">
-                                <span class="text-[10px] font-bold text-gray-700">日</span>
-                            </label>
+                            <!-- Checkboxes 1 to 6, 0 -->
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="1" class="mb-1.5"><span class="text-[10px]">一</span></label>
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="2" class="mb-1.5"><span class="text-[10px]">二</span></label>
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="3" class="mb-1.5"><span class="text-[10px]">三</span></label>
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="4" class="mb-1.5"><span class="text-[10px]">四</span></label>
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="5" class="mb-1.5"><span class="text-[10px]">五</span></label>
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="6" class="mb-1.5"><span class="text-[10px]">六</span></label>
+                            <label class="flex flex-col items-center py-2 bg-white border rounded-xl cursor-pointer"><input type="checkbox" name="sched_days" value="0" class="mb-1.5"><span class="text-[10px]">日</span></label>
                         </div>
                     </div>
                 </form>
-
-                <div class="space-y-6 pt-2" id="schedules-list-container">
-                    <!-- JS 動態生成按區域分類的卡片群組 -->
-                </div>
+                <div class="space-y-6 pt-2" id="schedules-list-container"></div>
             </div>
-    <!-- 主體內容區結尾 -->
+        </div>
     </main>
 
-    <!-- 頁尾 (淺色系) -->
-    <footer class="bg-white text-gray-400 text-[10px] py-8 border-t border-gray-200 mt-auto pb-24 md:pb-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-1.5">
-            <p class="font-semibold text-gray-600 tracking-wider">虎航促銷預測系統 · v6.7</p>
-            <p class="text-[9px] text-gray-400">本系統與台灣虎航官方無關，預測數據僅供旅日機票規劃參考</p>
+    <footer class="bg-white text-gray-400 text-[10px] py-6 border-t border-gray-200 mt-auto pb-24 md:pb-8">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-1">
+            <p class="font-semibold text-gray-500">虎航促銷預測系統 v6.8</p>
         </div>
     </footer>
 
@@ -563,23 +406,19 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // --- 核心系統狀態變數 ---
         let records = [];
         let schedules = [];
         let nogoDays = []; 
         let collapsedGroups = {}; 
-        let currentGroupMode = 'city'; 
-        let currentYear = new Date().getFullYear(); // 自動指向當下真實年份
-        let currentMonth = new Date().getMonth();   // 自動指向當下真實月份 (0-indexed)
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
         let activeConfirmCallback = null;
         let editingRoute = null; 
         let editingRecordId = null; 
 
-        // Flatpickr 實例
-        let fpDepart = null;
-        let fpReturn = null;
+        // Flatpickr instances
+        let fpDepart, fpReturn;
 
-        // Firebase 雲端狀態
         const builtInFirebaseConfig = {
             apiKey: "AIzaSyA1fJcM50HoYfoglPvp5OVjIb33az1Bbv8",
             authDomain: "flight-promotion-tracker.firebaseapp.com",
@@ -590,7 +429,6 @@
         let db = null;
         let isFirebaseConnected = false;
 
-        // 內建機場城市中文字典
         let airportZh = {
             "TPE": "台北桃園", "CTS": "札幌", "NRT": "東京成田", "HND": "東京羽田", "NGO": "名古屋", 
             "KIX": "大阪關西", "FUK": "福岡", "OKJ": "岡山", "OKA": "沖繩", "ISG": "石垣島", 
@@ -609,55 +447,61 @@
             "hokkaido": { name: "北海道", airports: ["HKD", "CTS"] }
         };
 
-        function getAirportName(code) {
-            if (!code) return "";
-            const upper = code.toUpperCase().trim();
-            return airportZh[upper] ? airportZh[upper] : upper;
+        // 台灣連假警示設定
+        const taiwanHolidays = [
+            { start: "2025-10-04", end: "2025-10-06", name: "2025 中秋連假" },
+            { start: "2025-10-10", end: "2025-10-12", name: "2025 國慶連假" },
+            { start: "2026-02-13", end: "2026-02-23", name: "2026 農曆春節" },
+            { start: "2026-04-03", end: "2026-04-06", name: "2026 清明連假" },
+            { start: "2026-06-19", end: "2026-06-21", name: "2026 端午連假" },
+            { start: "2026-09-25", end: "2026-09-27", name: "2026 中秋連假" },
+            { start: "2026-10-09", end: "2026-10-11", name: "2026 國慶連假" },
+            { start: "2027-02-04", end: "2027-02-14", name: "2027 農曆春節" },
+            { start: "2027-04-02", end: "2027-04-05", name: "2027 清明連假" },
+            { start: "2027-06-08", end: "2027-06-10", name: "2027 端午連假" }
+        ];
+
+        function checkHolidayWarning(dateObj) {
+            const time = dateObj.getTime();
+            for (const h of taiwanHolidays) {
+                // 前後加減 2 天緩衝期作為防呆
+                const start = new Date(h.start).getTime() - (2 * 86400000); 
+                const end = new Date(h.end).getTime() + (2 * 86400000);   
+                if (time >= start && time <= end) return h.name;
+            }
+            return null;
         }
 
+        function getAirportName(code) { return code ? (airportZh[code.toUpperCase()] || code.toUpperCase()) : ""; }
         function getDestinationFromRoute(routeStr) {
             if (!routeStr) return "";
             const parts = routeStr.split('-');
-            if (parts.length === 2) {
-                const taiwanAirports = ["TPE"];
-                if (taiwanAirports.includes(parts[0])) return parts[1];
-                else if (taiwanAirports.includes(parts[1])) return parts[0];
-                return parts[1];
-            }
+            if (parts.length === 2) return ["TPE"].includes(parts[0]) ? parts[1] : (["TPE"].includes(parts[1]) ? parts[0] : parts[1]);
             return routeStr;
         }
-
-        function getRouteDisplayName(routeStr) {
-            return getAirportName(getDestinationFromRoute(routeStr));
-        }
-
-        function formatPrice(val) {
-            if (val === null || val === undefined || val === '') return "-";
-            return Number(val).toLocaleString('zh-TW');
-        }
+        function getRouteDisplayName(routeStr) { return getAirportName(getDestinationFromRoute(routeStr)); }
+        function formatPrice(val) { return (val === null || val === undefined || val === '') ? "-" : Number(val).toLocaleString('zh-TW'); }
 
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            
-            let bgClass = "bg-white text-gray-800 border-gray-200";
-            let iconClass = "fa-circle-check text-emerald-500";
-            if (type === 'error') {
-                bgClass = "bg-rose-50 text-rose-700 border-rose-200";
-                iconClass = "fa-triangle-exclamation text-rose-500";
-            } else if (type === 'info') {
-                bgClass = "bg-gray-50 text-gray-800 border-gray-200";
-                iconClass = "fa-circle-info text-blue-500";
-            }
-
+            let bgClass = type === 'error' ? "bg-rose-50 text-rose-700 border-rose-200" : (type === 'info' ? "bg-gray-50 text-gray-800 border-gray-200" : "bg-white text-gray-800 border-gray-200");
+            let iconClass = type === 'error' ? "fa-triangle-exclamation text-rose-500" : (type === 'info' ? "fa-circle-info text-blue-500" : "fa-circle-check text-emerald-500");
             toast.className = `${bgClass} flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-[11px] font-semibold transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto max-w-xs`;
             toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> <span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-[-10px]'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function playSuccessAnimation() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.remove('opacity-0', 'scale-95');
+            modal.classList.add('opacity-100', 'scale-100');
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-10px]');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+                modal.classList.remove('opacity-100', 'scale-100');
+                modal.classList.add('opacity-0', 'scale-95');
+            }, 1200);
         }
 
         function showConfirm(title, message, onConfirm) {
@@ -668,171 +512,106 @@
             activeConfirmCallback = onConfirm;
         }
 
-        function showSuccessModal(message = "儲存成功") {
-            const modal = document.getElementById('success-modal');
-            const msgEl = document.getElementById('success-modal-message');
-            if (msgEl) msgEl.textContent = message;
-            
-            modal.classList.remove('hidden');
-            // Trigger reflow 以重置動畫
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            modal.firstElementChild.classList.remove('scale-95');
-            
-            // 延遲後淡出隱藏
-            setTimeout(() => {
-                modal.classList.add('opacity-0');
-                modal.firstElementChild.classList.add('scale-95');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }, 1200);
-        }
-
-        function initFlatpickr(mode = 'single') {
-            if (fpDepart) fpDepart.destroy();
-            if (fpReturn) fpReturn.destroy();
-            
-            const config = {
-                mode: mode,
-                dateFormat: "Y-m-d",
-                disableMobile: true, // 強制在手機上也使用 flatpickr 介面以支援多選
-                placeholder: mode === 'multiple' ? "可選多個日期..." : "選擇日期..."
-            };
-            fpDepart = flatpickr("#record-depart-date", config);
-            fpReturn = flatpickr("#record-return-date", config);
-        }
-
         function updatePromoCategoryVisibility() {
             const sourceType = document.querySelector('input[name="source_type"]:checked').value;
             const promoContainer = document.getElementById('promo-category-container');
+            
+            // 更新顏色風格
+            const dZone = document.getElementById('form-depart-zone');
+            const rZone = document.getElementById('form-return-zone');
             if (sourceType === 'Spot') {
                 promoContainer.classList.add('hidden');
+                dZone.className = "border-l-2 border-indigo-400 pl-3 space-y-3 bg-indigo-50/30 p-2 rounded-r-xl transition-colors";
+                rZone.className = "border-l-2 border-purple-400 pl-3 space-y-3 bg-purple-50/30 p-2 rounded-r-xl transition-colors";
             } else {
                 promoContainer.classList.remove('hidden');
+                dZone.className = "border-l-2 border-orange-400 pl-3 space-y-3 bg-orange-50/30 p-2 rounded-r-xl transition-colors";
+                rZone.className = "border-l-2 border-yellow-400 pl-3 space-y-3 bg-yellow-50/30 p-2 rounded-r-xl transition-colors";
             }
+
+            // 更新 Flatpickr 多選能力
+            if(fpDepart) {
+                fpDepart.destroy();
+                fpReturn.destroy();
+            }
+            fpDepart = flatpickr("#record-depart-date", { dateFormat: "Y-m-d", mode: sourceType === 'Spot' ? "multiple" : "single" });
+            fpReturn = flatpickr("#record-return-date", { dateFormat: "Y-m-d", mode: sourceType === 'Spot' ? "multiple" : "single" });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // 切換分頁導航
             bindClick('nav-dashboard', () => switchTab('dashboard'));
             bindClick('nav-records', () => switchTab('records'));
             bindClick('nav-schedules', () => switchTab('schedules'));
-
             bindClick('mob-dashboard', () => switchTab('dashboard'));
             bindClick('mob-records', () => switchTab('records'));
             bindClick('mob-schedules', () => switchTab('schedules'));
 
-            // 月曆按鈕
             bindClick('btn-prev-month', () => changeMonth(-1));
             bindClick('btn-next-month', () => changeMonth(1));
             
-            // Firebase與功能操作
-            bindClick('btn-toggle-firebase', toggleFirebasePanel);
-            bindClick('btn-close-firebase', toggleFirebasePanel);
+            bindClick('btn-toggle-firebase', () => document.getElementById('firebase-config-panel').classList.toggle('hidden'));
+            bindClick('btn-close-firebase', () => document.getElementById('firebase-config-panel').classList.add('hidden'));
             bindClick('btn-save-firebase', saveFirebaseConfig);
+            
             bindClick('btn-cancel-edit-sched', cancelEditSchedule);
             bindClick('btn-cancel-edit-record', cancelEditRecord);
             bindClick('btn-collapse-all', toggleAllCollapse);
 
-            // 手機版月曆左側說明區塊摺疊功能
-            bindClick('btn-toggle-info', () => {
-                const content = document.getElementById('dashboard-info-content');
-                const icon = document.getElementById('info-toggle-icon');
-                content.classList.toggle('hidden');
-                icon.classList.toggle('fa-chevron-down');
-                icon.classList.toggle('fa-chevron-up');
+            // 手機版圖例摺疊
+            bindClick('toggle-info-panel', () => {
+                if(window.innerWidth < 768) {
+                    document.getElementById('info-panel-content').classList.toggle('hidden');
+                    document.getElementById('info-panel-icon').classList.toggle('fa-chevron-down');
+                    document.getElementById('info-panel-icon').classList.toggle('fa-chevron-up');
+                }
             });
 
-            // 歷史紀錄下拉分類選單
-            bindEvent('record-group-select', 'change', (e) => {
-                currentGroupMode = e.target.value;
+            bindEvent('record-group-mode', 'change', renderRecordsTable);
+            
+            // 搜尋列 X 按鈕邏輯
+            bindEvent('record-search', 'input', (e) => {
+                document.getElementById('btn-clear-search').classList.toggle('hidden', e.target.value === '');
+                renderRecordsTable();
+            });
+            bindClick('btn-clear-search', () => {
+                document.getElementById('record-search').value = '';
+                document.getElementById('btn-clear-search').classList.add('hidden');
                 renderRecordsTable();
             });
 
             bindEvent('calendar-route-select', 'change', updateDashboard);
             bindEvent('calendar-type-select', 'change', updateDashboard);
             bindEvent('calendar-hide-spot', 'change', updateDashboard);
+
+            document.querySelectorAll('input[name="source_type"]').forEach(radio => radio.addEventListener('change', updatePromoCategoryVisibility));
             
-            // 搜尋框輸入時顯示X，X的清除功能
-            bindEvent('record-search', 'input', (e) => {
-                const btn = document.getElementById('btn-clear-search');
-                if(e.target.value.length > 0) btn.classList.remove('hidden');
-                else btn.classList.add('hidden');
-                renderRecordsTable();
-            });
-            bindClick('btn-clear-search', () => {
-                const input = document.getElementById('record-search');
-                input.value = '';
-                document.getElementById('btn-clear-search').classList.add('hidden');
-                renderRecordsTable();
-            });
-
-            document.querySelectorAll('input[name="source_type"]').forEach(radio => {
-                radio.addEventListener('change', () => {
-                    updatePromoCategoryVisibility();
-                    // 切換為官網自查時啟用多選模式，其餘單選
-                    const st = document.querySelector('input[name="source_type"]:checked').value;
-                    initFlatpickr(st === 'Spot' ? 'multiple' : 'single');
-                });
-            });
-            updatePromoCategoryVisibility();
-            initFlatpickr('single'); // 初始載入日期選擇器
-
             bindFormSubmit('record-form', handleRecordSubmit);
             bindFormSubmit('schedule-form', handleScheduleSubmit);
 
-            bindClick('confirm-cancel', () => {
-                document.getElementById('confirm-modal').classList.add('hidden');
-                activeConfirmCallback = null;
-            });
-            bindClick('confirm-ok', () => {
-                document.getElementById('confirm-modal').classList.add('hidden');
-                if (typeof activeConfirmCallback === 'function') activeConfirmCallback();
-                activeConfirmCallback = null;
-            });
+            bindClick('confirm-cancel', () => { document.getElementById('confirm-modal').classList.add('hidden'); activeConfirmCallback = null; });
+            bindClick('confirm-ok', () => { document.getElementById('confirm-modal').classList.add('hidden'); if (activeConfirmCallback) activeConfirmCallback(); activeConfirmCallback = null; });
 
-            const groupedContainer = document.getElementById('records-grouped-container');
-            if (groupedContainer) {
-                groupedContainer.addEventListener('click', function(e) {
-                    const toggleHeader = e.target.closest('[data-toggle-group]');
-                    const deleteBtn = e.target.closest('[data-delete-record]');
-                    const editBtn = e.target.closest('[data-edit-record]');
-                    
-                    if (toggleHeader) {
-                        const groupKey = toggleHeader.getAttribute('data-toggle-group');
-                        collapsedGroups[groupKey] = !collapsedGroups[groupKey];
-                        renderRecordsTable();
-                    } else if (deleteBtn) {
-                        deleteRecord(deleteBtn.getAttribute('data-delete-record'));
-                    } else if (editBtn) {
-                        startEditRecord(editBtn.getAttribute('data-edit-record'));
-                    }
-                });
-            }
-
-            document.getElementById('schedules-list-container').addEventListener('click', function(e) {
-                const deleteBtn = e.target.closest('[data-delete-schedule]');
-                const editBtn = e.target.closest('[data-edit-schedule]');
-                const createBtn = e.target.closest('[data-create-schedule]');
-                
-                if (deleteBtn) deleteSchedule(deleteBtn.getAttribute('data-delete-schedule'));
-                else if (editBtn) startEditSchedule(editBtn.getAttribute('data-edit-schedule'));
-                else if (createBtn) startCreateScheduleForAirport(createBtn.getAttribute('data-create-schedule'));
+            document.getElementById('records-grouped-container')?.addEventListener('click', e => {
+                const toggleHeader = e.target.closest('[data-toggle-group]');
+                if (toggleHeader) { collapsedGroups[toggleHeader.getAttribute('data-toggle-group')] = !collapsedGroups[toggleHeader.getAttribute('data-toggle-group')]; renderRecordsTable(); }
+                const del = e.target.closest('[data-delete-record]'); if (del) deleteRecord(del.getAttribute('data-delete-record'));
+                const edit = e.target.closest('[data-edit-record]'); if (edit) startEditRecord(edit.getAttribute('data-edit-record'));
             });
 
-            document.getElementById('dual-calendars-container').addEventListener('click', function(e) {
+            document.getElementById('schedules-list-container').addEventListener('click', e => {
+                const del = e.target.closest('[data-delete-schedule]'); if (del) deleteSchedule(del.getAttribute('data-delete-schedule'));
+                const edit = e.target.closest('[data-edit-schedule]'); if (edit) startEditSchedule(edit.getAttribute('data-edit-schedule'));
+                const create = e.target.closest('[data-create-schedule]'); if (create) startCreateScheduleForAirport(create.getAttribute('data-create-schedule'));
+            });
+
+            document.getElementById('dual-calendars-container').addEventListener('click', e => {
                 const dayCell = e.target.closest('[data-day-cell]');
-                if (dayCell) {
-                    handleCalendarCellClick(
-                        dayCell.getAttribute('data-day-date'),
-                        dayCell.getAttribute('data-day-flight') === 'true',
-                        parseInt(dayCell.getAttribute('data-day-num'))
-                    );
-                }
+                if (dayCell) handleCalendarCellClick(dayCell.getAttribute('data-day-date'), dayCell.getAttribute('data-day-flight') === 'true', parseInt(dayCell.getAttribute('data-day-num')));
             });
 
-            document.getElementById('nogo-action-area').addEventListener('click', function(e) {
-                const toggleNogoBtn = e.target.closest('#btn-toggle-nogo');
-                if (toggleNogoBtn) toggleNogoDay(toggleNogoBtn.getAttribute('data-date'));
+            document.getElementById('nogo-action-area').addEventListener('click', e => {
+                const toggleNogo = e.target.closest('#btn-toggle-nogo');
+                if (toggleNogo) toggleNogoDay(toggleNogo.getAttribute('data-date'));
             });
 
             initSystem();
@@ -843,436 +622,283 @@
         function bindFormSubmit(id, callback) { const el = document.getElementById(id); if (el) el.addEventListener('submit', callback); }
 
         async function loadStoredData() {
-            const customZh = localStorage.getItem('tiger_airport_zh_v7');
-            if (customZh) airportZh = { ...airportZh, ...JSON.parse(customZh) };
-
+            const customZh = localStorage.getItem('tiger_airport_zh_v7'); if (customZh) airportZh = { ...airportZh, ...JSON.parse(customZh) };
             if (isFirebaseConnected) {
                 try {
-                    const docRef = doc(db, "tigerair", "cloud_data");
-                    const docSnap = await getDoc(docRef);
+                    const docSnap = await getDoc(doc(db, "tigerair", "cloud_data"));
                     if (docSnap.exists()) {
                         const cloud = docSnap.data();
-                        records = cloud.records || [];
-                        schedules = cloud.schedules || [];
-                        nogoDays = cloud.nogoDays || [];
+                        records = cloud.records || []; schedules = cloud.schedules || []; nogoDays = cloud.nogoDays || [];
                         if (cloud.airportZh) airportZh = { ...airportZh, ...cloud.airportZh };
-                        saveToLocalCache();
-                        return;
+                        saveToLocalCache(); return;
                     }
-                } catch (error) {
-                    showToast("Firebase 同步讀取失敗，採用本機儲存模式", "error");
-                }
+                } catch (error) { showToast("Firebase 同步讀取失敗，採用本機儲存模式", "error"); }
             }
-            
             records = JSON.parse(localStorage.getItem('tiger_records_v7') || '[]');
             schedules = JSON.parse(localStorage.getItem('tiger_schedules_v7') || '[]');
             nogoDays = JSON.parse(localStorage.getItem('tiger_nogo_days_v7') || '[]');
         }
 
         function saveToLocalCache() {
-            localStorage.setItem('tiger_records_v7', JSON.stringify(records));
-            localStorage.setItem('tiger_schedules_v7', JSON.stringify(schedules));
-            localStorage.setItem('tiger_nogo_days_v7', JSON.stringify(nogoDays));
-            localStorage.setItem('tiger_airport_zh_v7', JSON.stringify(airportZh));
+            localStorage.setItem('tiger_records_v7', JSON.stringify(records)); localStorage.setItem('tiger_schedules_v7', JSON.stringify(schedules));
+            localStorage.setItem('tiger_nogo_days_v7', JSON.stringify(nogoDays)); localStorage.setItem('tiger_airport_zh_v7', JSON.stringify(airportZh));
         }
 
         async function syncData() {
             saveToLocalCache();
             if (isFirebaseConnected) {
-                try {
-                    await setDoc(doc(db, "tigerair", "cloud_data"), {
-                        records, schedules, nogoDays, airportZh,
-                        updatedAt: new Date().toISOString()
-                    });
-                } catch (error) {
-                    showToast("雲端同步失敗，改存於本機", "error");
-                }
+                try { await setDoc(doc(db, "tigerair", "cloud_data"), { records, schedules, nogoDays, airportZh, updatedAt: new Date().toISOString() }); } 
+                catch (error) { showToast("雲端同步失敗，改存於本機", "error"); }
             }
         }
 
-        function toggleFirebasePanel() { document.getElementById('firebase-config-panel').classList.toggle('hidden'); }
-
         async function saveFirebaseConfig() {
-            const apiKey = document.getElementById('fb-apiKey').value.trim();
-            const authDomain = document.getElementById('fb-authDomain').value.trim();
-            const projectId = document.getElementById('fb-projectId').value.trim();
-            const appId = document.getElementById('fb-appId').value.trim();
-
+            const apiKey = document.getElementById('fb-apiKey').value.trim(); const authDomain = document.getElementById('fb-authDomain').value.trim();
+            const projectId = document.getElementById('fb-projectId').value.trim(); const appId = document.getElementById('fb-appId').value.trim();
             if (!apiKey || !projectId || !appId) return showToast("請完整填寫必填欄位！", "error");
-
             const config = { apiKey, authDomain, projectId, appId };
             localStorage.setItem('tiger_firebase_config_v7', JSON.stringify(config));
             showToast("正在嘗試雲端同步連線...", "info");
-            
-            await initFirebase(config);
-            await loadStoredData();
-            
-            populateRouteDropdowns();
-            updateDashboard();
-            renderRecordsTable();
-            renderSchedulesList();
-            toggleFirebasePanel();
+            await initFirebase(config); await loadStoredData();
+            populateRouteDropdowns(); updateDashboard(); renderRecordsTable(); renderSchedulesList();
+            document.getElementById('firebase-config-panel').classList.add('hidden');
         }
 
         async function initFirebase(config) {
             try {
-                firebaseApp = initializeApp(config);
-                db = getFirestore(firebaseApp);
-                isFirebaseConnected = true;
+                firebaseApp = initializeApp(config); db = getFirestore(firebaseApp); isFirebaseConnected = true;
                 document.getElementById('firebase-status-text').textContent = "雲端同步模式";
-                document.getElementById('firebase-indicator').className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)] animate-pulse";
+                document.getElementById('firebase-indicator').className = "inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)] animate-pulse";
                 showToast("雲端資料庫已連線！");
             } catch (err) {
                 isFirebaseConnected = false;
                 document.getElementById('firebase-status-text').textContent = "僅限本機儲存";
-                document.getElementById('firebase-indicator').className = "inline-block w-2.5 h-2.5 rounded-full bg-gray-300";
+                document.getElementById('firebase-indicator').className = "inline-block w-2 h-2 rounded-full bg-gray-300";
             }
         }
 
+        // 核心對齊演算法
         function getAlignedDate(originalDateStr, targetYear) {
             const orig = new Date(originalDateStr);
             if (isNaN(orig)) return null;
-            const origMonth = orig.getMonth();
-            const origYear = orig.getFullYear();
-
             function getFirstWeekStartMonday(year, month) {
                 const firstDay = new Date(year, month, 1);
-                const firstDayWeekday = firstDay.getDay(); 
-                if (firstDayWeekday === 0) return new Date(year, month, 2); 
-                else return new Date(year, month, 1 - (firstDayWeekday - 1));
+                const wd = firstDay.getDay(); 
+                return wd === 0 ? new Date(year, month, 2) : new Date(year, month, 1 - (wd - 1));
             }
-
-            const origStartMonday = getFirstWeekStartMonday(origYear, origMonth);
-            const diffDays = Math.floor((orig.getTime() - origStartMonday.getTime()) / (1000 * 60 * 60 * 24));
-            
-            const targetStartMonday = getFirstWeekStartMonday(targetYear, origMonth);
+            const origStartMonday = getFirstWeekStartMonday(orig.getFullYear(), orig.getMonth());
+            const diffDays = Math.floor((orig.getTime() - origStartMonday.getTime()) / 86400000);
+            const targetStartMonday = getFirstWeekStartMonday(targetYear, orig.getMonth());
             const projectedDate = new Date(targetStartMonday.getTime());
             projectedDate.setDate(projectedDate.getDate() + (Math.floor(diffDays / 7) * 7) + (diffDays % 7));
-
             return projectedDate;
         }
 
-        function formatDate(date) {
-            if (!date) return "";
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        // 解析出單筆紀錄的去回對齊日期 (包含天數推算邏輯)
+        function getRecordAlignedDates(r, targetYear) {
+            let alignedDepart = null;
+            let alignedReturn = null;
+            if (r.depart_date) alignedDepart = getAlignedDate(r.depart_date, targetYear);
+            if (r.return_date) {
+                if (r.depart_date && alignedDepart) {
+                    const diffDays = Math.round((new Date(r.return_date).getTime() - new Date(r.depart_date).getTime()) / 86400000);
+                    alignedReturn = new Date(alignedDepart.getTime());
+                    alignedReturn.setDate(alignedReturn.getDate() + diffDays);
+                } else {
+                    alignedReturn = getAlignedDate(r.return_date, targetYear);
+                }
+            }
+            return { alignedDepart, alignedReturn };
         }
 
+        function formatDate(date) { return date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : ""; }
         const weekDaysChinese = ["日", "一", "二", "三", "四", "五", "六"];
-        function getWeekdayName(dateStr) {
-            const d = new Date(dateStr);
-            return isNaN(d) ? "" : "週" + weekDaysChinese[d.getDay()];
-        }
+        function getWeekdayName(dateStr) { const d = new Date(dateStr); return isNaN(d) ? "" : "週" + weekDaysChinese[d.getDay()]; }
 
         async function initSystem() {
+            updatePromoCategoryVisibility();
             let config = builtInFirebaseConfig;
-            const savedConfig = localStorage.getItem('tiger_firebase_config_v7');
-            if (savedConfig) config = JSON.parse(savedConfig);
-            
-            document.getElementById('fb-apiKey').value = config.apiKey || "";
-            document.getElementById('fb-authDomain').value = config.authDomain || "";
-            document.getElementById('fb-projectId').value = config.projectId || "";
-            document.getElementById('fb-appId').value = config.appId || "";
-            
-            // 初始化下拉選單設定
-            const selectEl = document.getElementById('record-group-select');
-            if (selectEl) selectEl.value = currentGroupMode;
-
-            await initFirebase(config);
-            await loadStoredData();
-            
-            populateRouteDropdowns();
-            updateDashboard();
-            renderRecordsTable();
-            renderSchedulesList();
+            const savedConfig = localStorage.getItem('tiger_firebase_config_v7'); if (savedConfig) config = JSON.parse(savedConfig);
+            document.getElementById('fb-apiKey').value = config.apiKey || ""; document.getElementById('fb-authDomain').value = config.authDomain || "";
+            document.getElementById('fb-projectId').value = config.projectId || ""; document.getElementById('fb-appId').value = config.appId || "";
+            await initFirebase(config); await loadStoredData();
+            populateRouteDropdowns(); updateDashboard(); renderRecordsTable(); renderSchedulesList();
         }
 
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition duration-200";
-            });
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeNav) activeNav.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-900 transition duration-200";
-
-            document.querySelectorAll('.mob-tab-btn').forEach(btn => {
-                btn.className = "mob-tab-btn text-gray-400 flex flex-col items-center";
-            });
-            const activeMobNav = document.getElementById(`mob-${tabId}`);
-            if (activeMobNav) activeMobNav.className = "mob-tab-btn text-gray-900 font-bold flex flex-col items-center";
-
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:bg-gray-50 transition");
+            const activeNav = document.getElementById(`nav-${tabId}`); if (activeNav) activeNav.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-900 transition";
+            document.querySelectorAll('.mob-tab-btn').forEach(btn => btn.className = "mob-tab-btn text-gray-400 flex flex-col items-center");
+            const activeMobNav = document.getElementById(`mob-${tabId}`); if (activeMobNav) activeMobNav.className = "mob-tab-btn text-gray-900 font-bold flex flex-col items-center";
             if (tabId === 'dashboard') updateDashboard();
         }
 
         function getUniqueDestinations() {
-            const taiwanAirports = ["TPE"];
             const dests = new Set();
-            schedules.forEach(s => {
-                const parts = s.route.split('-');
-                if (parts.length === 2) {
-                    if (!taiwanAirports.includes(parts[0])) dests.add(parts[0]);
-                    if (!taiwanAirports.includes(parts[1])) dests.add(parts[1]);
-                }
-            });
-            records.forEach(r => {
-                if (r.depart_to && !taiwanAirports.includes(r.depart_to)) dests.add(r.depart_to);
-                if (r.depart_from && !taiwanAirports.includes(r.depart_from)) dests.add(r.depart_from);
-                if (r.return_to && !taiwanAirports.includes(r.return_to)) dests.add(r.return_to);
-                if (r.return_from && !taiwanAirports.includes(r.return_from)) dests.add(r.return_from);
-            });
+            schedules.forEach(s => { const parts = s.route.split('-'); if (parts.length === 2) { if (parts[0]!=='TPE') dests.add(parts[0]); if (parts[1]!=='TPE') dests.add(parts[1]); } });
+            records.forEach(r => { ['depart_to', 'depart_from', 'return_to', 'return_from'].forEach(k => { if(r[k] && r[k]!=='TPE') dests.add(r[k]); }); });
             return Array.from(dests);
         }
 
         function populateRouteDropdowns() {
             const calendarRouteSelect = document.getElementById('calendar-route-select');
             if (calendarRouteSelect) {
-                calendarRouteSelect.innerHTML = `<option value="all" class="font-bold text-gray-800 bg-white">全部地區</option>`;
+                calendarRouteSelect.innerHTML = `<option value="all" class="font-bold">全部地區</option>`;
                 const definedAirports = new Set();
                 for (const [key, region] of Object.entries(regions)) {
-                    calendarRouteSelect.innerHTML += `<option value="region_${key}" class="font-bold bg-gray-100 text-gray-800 py-1">■ ${region.name}</option>`;
-                    region.airports.forEach(code => {
-                        definedAirports.add(code);
-                        calendarRouteSelect.innerHTML += `<option value="${code}" class="pl-4 text-gray-700">　${getAirportName(code)} (${code})</option>`;
-                    });
+                    calendarRouteSelect.innerHTML += `<option value="region_${key}" class="font-bold bg-gray-100">■ ${region.name}</option>`;
+                    region.airports.forEach(code => { definedAirports.add(code); calendarRouteSelect.innerHTML += `<option value="${code}">　${getAirportName(code)} (${code})</option>`; });
                 }
                 const otherAirports = getUniqueDestinations().filter(code => !definedAirports.has(code));
                 if (otherAirports.length > 0) {
-                    calendarRouteSelect.innerHTML += `<option value="region_others" class="font-bold bg-gray-100 text-gray-800 py-1">■ 其他地區</option>`;
-                    otherAirports.forEach(code => {
-                        calendarRouteSelect.innerHTML += `<option value="${code}" class="pl-4 text-gray-700">　${getAirportName(code)} (${code})</option>`;
-                    });
+                    calendarRouteSelect.innerHTML += `<option value="region_others" class="font-bold bg-gray-100">■ 其他地區</option>`;
+                    otherAirports.forEach(code => calendarRouteSelect.innerHTML += `<option value="${code}">　${getAirportName(code)} (${code})</option>`);
                 }
             }
-
-            const formSelectIds = ['record-depart-from', 'record-depart-to', 'record-return-from', 'record-return-to'];
-            formSelectIds.forEach(id => {
+            ['record-depart-from', 'record-depart-to', 'record-return-from', 'record-return-to'].forEach(id => {
                 const selectEl = document.getElementById(id);
                 if (!selectEl) return;
-                selectEl.innerHTML = `<option value="">請選擇...</option><option disabled class="font-bold bg-gray-100 text-gray-800">■ 台灣</option><option value="TPE" class="pl-2">　台北桃園 (TPE)</option>`;
+                selectEl.innerHTML = `<option value="">請選擇...</option><option disabled class="font-bold bg-gray-100">■ 台灣</option><option value="TPE">　台北桃園 (TPE)</option>`;
                 for (const [key, region] of Object.entries(regions)) {
-                    selectEl.innerHTML += `<option disabled class="font-bold bg-gray-100 text-gray-800">■ ${region.name}</option>`;
-                    region.airports.forEach(code => {
-                        selectEl.innerHTML += `<option value="${code}" class="pl-2">　${getAirportName(code)} (${code})</option>`;
-                    });
+                    selectEl.innerHTML += `<option disabled class="font-bold bg-gray-100">■ ${region.name}</option>`;
+                    region.airports.forEach(code => selectEl.innerHTML += `<option value="${code}">　${getAirportName(code)} (${code})</option>`);
                 }
             });
         }
 
-        function changeMonth(dir) {
-            currentMonth += dir;
-            if (currentMonth < 0) { currentMonth = 11; currentYear--; } 
-            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-            updateDashboard();
-        }
-
-        function updateDashboard() {
-            renderRouteDaysPreview();
-            renderDualCalendars();
-        }
+        function changeMonth(dir) { currentMonth += dir; if (currentMonth < 0) { currentMonth = 11; currentYear--; } else if (currentMonth > 11) { currentMonth = 0; currentYear++; } updateDashboard(); }
+        function updateDashboard() { renderRouteDaysPreview(); renderDualCalendars(); }
 
         function isAirportFlightDay(airportCode, weekday) {
-            const sched = schedules.find(s => s.route.includes(airportCode));
-            return sched ? sched.days.includes(weekday) : true;
+            const sched = schedules.find(s => s.route.includes(airportCode)); return sched ? sched.days.includes(weekday) : true;
         }
 
         function getSelectedRouteDays() {
-            const routeSelect = document.getElementById('calendar-route-select');
-            const selectedValue = routeSelect ? (routeSelect.value || "all") : "all";
-            
-            if (selectedValue === 'all') {
-                const days = new Set();
-                schedules.forEach(s => s.days.forEach(d => days.add(d)));
-                return Array.from(days);
-            }
-            if (selectedValue.startsWith('region_')) {
-                const regionId = selectedValue.replace('region_', '');
-                if (regionId === 'others') {
-                    const defined = new Set();
-                    for (const r of Object.values(regions)) r.airports.forEach(a => defined.add(a));
+            const val = document.getElementById('calendar-route-select')?.value || "all";
+            const days = new Set();
+            if (val === 'all') { schedules.forEach(s => s.days.forEach(d => days.add(d))); return Array.from(days); }
+            if (val.startsWith('region_')) {
+                const rid = val.replace('region_', '');
+                if (rid === 'others') {
+                    const defined = new Set(); Object.values(regions).forEach(r => r.airports.forEach(a => defined.add(a)));
                     const otherDests = getUniqueDestinations().filter(c => !defined.has(c));
-                    const days = new Set();
-                    schedules.forEach(s => {
-                        if (otherDests.includes(getDestinationFromRoute(s.route))) s.days.forEach(d => days.add(d));
-                    });
-                    return Array.from(days);
+                    schedules.forEach(s => { if (otherDests.includes(getDestinationFromRoute(s.route))) s.days.forEach(d => days.add(d)); });
+                } else {
+                    const rAirports = regions[rid]?.airports || [];
+                    schedules.forEach(s => { if (rAirports.includes(getDestinationFromRoute(s.route))) s.days.forEach(d => days.add(d)); });
                 }
-                const regionAirports = regions[regionId]?.airports || [];
-                const days = new Set();
-                schedules.forEach(s => {
-                    if (regionAirports.includes(getDestinationFromRoute(s.route))) s.days.forEach(d => days.add(d));
-                });
                 return Array.from(days);
             }
-            const sched = schedules.find(s => s.route.includes(selectedValue));
-            return sched ? sched.days : [0, 1, 2, 3, 4, 5, 6]; 
+            const sched = schedules.find(s => s.route.includes(val)); return sched ? sched.days : [0, 1, 2, 3, 4, 5, 6]; 
         }
 
-        function isRouteMatchingSelected(r, selectedValue) {
-            if (selectedValue === 'all') return true;
-            if (selectedValue.startsWith('region_')) {
-                const regionId = selectedValue.replace('region_', '');
-                if (regionId === 'others') {
-                    const defined = new Set();
-                    for (const reg of Object.values(regions)) reg.airports.forEach(a => defined.add(a));
+        function isRouteMatchingSelected(r, val) {
+            if (val === 'all') return true;
+            if (val.startsWith('region_')) {
+                const rid = val.replace('region_', '');
+                if (rid === 'others') {
+                    const defined = new Set(); Object.values(regions).forEach(r => r.airports.forEach(a => defined.add(a)));
                     const otherDests = getUniqueDestinations().filter(c => !defined.has(c));
                     return otherDests.includes(r.depart_to) || otherDests.includes(r.depart_from) || otherDests.includes(r.return_to) || otherDests.includes(r.return_from);
                 }
-                const regionAirports = regions[regionId]?.airports || [];
-                return regionAirports.includes(r.depart_to) || regionAirports.includes(r.depart_from) || regionAirports.includes(r.return_to) || regionAirports.includes(r.return_from);
+                const rAirports = regions[rid]?.airports || [];
+                return rAirports.includes(r.depart_to) || rAirports.includes(r.depart_from) || rAirports.includes(r.return_to) || rAirports.includes(r.return_from);
             }
-            return r.depart_to === selectedValue || r.depart_from === selectedValue || r.return_to === selectedValue || r.return_from === selectedValue;
+            return r.depart_to === val || r.depart_from === val || r.return_to === val || r.return_from === val;
         }
 
         function renderRouteDaysPreview() {
-            const activeDays = getSelectedRouteDays();
-            const container = document.getElementById('route-days-preview');
-            container.innerHTML = "";
-            const order = [1, 2, 3, 4, 5, 6, 0];
-            order.forEach(dayIndex => {
+            const activeDays = getSelectedRouteDays(); const container = document.getElementById('route-days-preview'); container.innerHTML = "";
+            [1, 2, 3, 4, 5, 6, 0].forEach(dayIndex => {
                 const isActive = activeDays.includes(dayIndex);
-                container.innerHTML += `<div class="p-1 rounded text-[10px] font-bold transition-all ${isActive ? 'bg-gray-800 text-white shadow-sm' : 'bg-white border border-gray-200 text-gray-400 line-through'}">${weekDaysChinese[dayIndex]}</div>`;
+                container.innerHTML += `<div class="p-1 rounded text-[10px] font-bold ${isActive ? 'bg-gray-800 text-white shadow-sm' : 'bg-white border text-gray-400 line-through'}">${weekDaysChinese[dayIndex]}</div>`;
             });
         }
 
         function renderDualCalendars() {
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-            let m1_year = currentYear;
-            let m1_month = currentMonth;
-            let m2_year = m1_month === 11 ? m1_year + 1 : m1_year;
-            let m2_month = (m1_month + 1) % 12;
-
-            document.getElementById('calendar-range-label').textContent = `${m1_year}年 ${monthNames[m1_month]} - ${m2_year}年 ${monthNames[m2_month]}`;
-
-            const container = document.getElementById('dual-calendars-container');
-            container.innerHTML = "";
-            container.appendChild(buildMonthDOM(m1_year, m1_month));
-            container.appendChild(buildMonthDOM(m2_year, m2_month));
+            let m1_y = currentYear, m1_m = currentMonth, m2_y = m1_m === 11 ? m1_y + 1 : m1_y, m2_m = (m1_m + 1) % 12;
+            document.getElementById('calendar-range-label').textContent = `${m1_y}年 ${monthNames[m1_m]} - ${m2_y}年 ${monthNames[m2_m]}`;
+            const container = document.getElementById('dual-calendars-container'); container.innerHTML = "";
+            container.appendChild(buildMonthDOM(m1_y, m1_m)); container.appendChild(buildMonthDOM(m2_y, m2_m));
         }
 
         function buildMonthDOM(year, month) {
             const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"];
-            const wrapper = document.createElement('div');
-            wrapper.className = "space-y-2";
+            const wrapper = document.createElement('div'); wrapper.className = "space-y-2";
+            wrapper.innerHTML = `<div class="text-[11px] font-bold text-gray-800 bg-gray-50 py-2 px-3 rounded-xl border border-gray-200"><span>${year}年 ${monthNames[month]}</span></div>
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-gray-400 pb-1"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>`;
+            const daysGrid = document.createElement('div'); daysGrid.className = "grid grid-cols-7 gap-1.5 text-xs";
 
-            wrapper.innerHTML = `
-                <div class="text-[11px] font-bold text-gray-800 bg-gray-50 py-2 px-3 rounded-xl flex justify-between border border-gray-200">
-                    <span>${year}年 ${monthNames[month]}</span>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center font-bold text-[9px] text-gray-400 pb-1">
-                    <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
-                </div>
-            `;
-
-            const daysGrid = document.createElement('div');
-            daysGrid.className = "grid grid-cols-7 gap-1.5 text-xs";
-
-            const firstDayOfMonth = new Date(year, month, 1);
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            let startWeekday = firstDayOfMonth.getDay(); 
-            let emptyCellsCount = startWeekday === 0 ? 6 : startWeekday - 1;
-
-            for (let i = 0; i < emptyCellsCount; i++) {
-                daysGrid.innerHTML += `<div class="bg-gray-50/50 rounded-xl h-12 border border-transparent"></div>`;
-            }
+            let startWeekday = new Date(year, month, 1).getDay(); let emptyCellsCount = startWeekday === 0 ? 6 : startWeekday - 1;
+            for (let i = 0; i < emptyCellsCount; i++) daysGrid.innerHTML += `<div class="bg-gray-50/50 rounded-xl h-12 border border-transparent"></div>`;
 
             const routeDays = getSelectedRouteDays();
             const filterType = document.getElementById('calendar-type-select').value;
             const hideSpot = document.getElementById('calendar-hide-spot')?.checked;
-            const routeSelect = document.getElementById('calendar-route-select');
-            const selectedValue = routeSelect ? (routeSelect.value || "all") : "all";
+            const selectedValue = document.getElementById('calendar-route-select')?.value || "all";
 
             for (let day = 1; day <= daysInMonth; day++) {
-                const tempDate = new Date(year, month, day);
-                const dateString = formatDate(tempDate);
-                const weekday = tempDate.getDay(); 
+                const tempDate = new Date(year, month, day); const dateStr = formatDate(tempDate); const wd = tempDate.getDay();
+                const isFlightDay = routeDays.includes(wd); const isNogo = nogoDays.includes(dateStr); 
 
-                const isFlightDay = routeDays.includes(weekday);
-                const isNogo = nogoDays.includes(dateString); 
-
-                let isAlignedDepart = false; 
-                let isAlignedReturn = false; 
-                let isDepartFlightDay = false; 
-                let isReturnFlightDay = false;
-
-                let hasPTTDepart = false, hasSpotDepart = false;
-                let hasPTTReturn = false, hasSpotReturn = false;
+                let isAlignedDepart = false, isAlignedReturn = false; 
+                let isDepartFlightDay = false, isReturnFlightDay = false;
+                let hasPTTDepart = false, hasSpotDepart = false, hasPTTReturn = false, hasSpotReturn = false;
 
                 records.forEach(r => {
                     if (hideSpot && r.source_type === 'Spot') return;
-                    if (filterType !== 'all') {
-                        if (r.source_type === 'Spot') return; 
-                        if (r.promo_category !== filterType) return;
-                    }
+                    if (filterType !== 'all') { if (r.source_type === 'Spot') return; if (r.promo_category !== filterType) return; }
                     if (!isRouteMatchingSelected(r, selectedValue)) return;
 
-                    const alignedDepart = r.depart_date ? getAlignedDate(r.depart_date, year) : null;
-                    const alignedReturn = r.return_date ? getAlignedDate(r.return_date, year) : null;
+                    const { alignedDepart, alignedReturn } = getRecordAlignedDates(r, year);
 
-                    if (alignedDepart && formatDate(alignedDepart) === dateString) {
-                        isAlignedDepart = true;
-                        if (r.source_type === 'Spot') hasSpotDepart = true; else hasPTTDepart = true;
-                        const dest = r.depart_to || r.depart_from;
-                        if (isAirportFlightDay(dest, weekday)) isDepartFlightDay = true;
+                    if (alignedDepart && formatDate(alignedDepart) === dateStr) {
+                        isAlignedDepart = true; if (r.source_type === 'Spot') hasSpotDepart = true; else hasPTTDepart = true;
+                        if (isAirportFlightDay(r.depart_to || r.depart_from, wd)) isDepartFlightDay = true;
                     }
-                    if (alignedReturn && formatDate(alignedReturn) === dateString) {
-                        isAlignedReturn = true;
-                        if (r.source_type === 'Spot') hasSpotReturn = true; else hasPTTReturn = true;
-                        const dest = r.return_to || r.return_from;
-                        if (isAirportFlightDay(dest, weekday)) isReturnFlightDay = true;
+                    if (alignedReturn && formatDate(alignedReturn) === dateStr) {
+                        isAlignedReturn = true; if (r.source_type === 'Spot') hasSpotReturn = true; else hasPTTReturn = true;
+                        if (isAirportFlightDay(r.return_to || r.return_from, wd)) isReturnFlightDay = true;
                     }
                 });
 
-                let onlySpotDepart = hasSpotDepart && !hasPTTDepart;
-                let onlySpotReturn = hasSpotReturn && !hasPTTReturn;
+                let onlySpotDepart = hasSpotDepart && !hasPTTDepart, onlySpotReturn = hasSpotReturn && !hasPTTReturn;
+                let bgClass = "bg-white text-gray-800 border-gray-100 hover:bg-gray-50 hover:border-gray-200", arrowIndicator = "";
 
-                let bgClass = "bg-white text-gray-800 border-gray-100 hover:bg-gray-50 hover:border-gray-200";
-                let arrowIndicator = "";
-
-                if (isNogo) {
-                    bgClass = "nogo-pattern text-rose-500 shadow-none";
-                } else if (isAlignedDepart && isAlignedReturn) {
+                if (isNogo) { bgClass = "nogo-pattern text-rose-500 shadow-none"; } 
+                else if (isAlignedDepart && isAlignedReturn) {
                     if (onlySpotDepart && onlySpotReturn) {
-                        // 官網自查雙向: 靛色至紫色漸層
                         arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-extrabold text-xs">⇆</span>';
                         bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
                     } else {
-                        // 促銷雙向: 橙色至黃色漸層
                         arrowIndicator = '<span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500 font-extrabold text-xs">⇆</span>';
                         bgClass = (isDepartFlightDay && isReturnFlightDay) ? "bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 font-bold" : "bg-gray-50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isAlignedDepart) {
                     if (onlySpotDepart) {
-                        // 官網自查去程: 靛色 (Indigo)
                         arrowIndicator = '<span class="text-indigo-500 font-extrabold text-xs">→</span>';
                         bgClass = isDepartFlightDay ? "bg-indigo-50 border-indigo-300 font-bold" : "bg-indigo-50/50 text-gray-400 border-gray-200 line-through";
                     } else {
-                        // 促銷去程: 橙色 (Orange)
                         arrowIndicator = '<span class="text-orange-500 font-extrabold text-xs">→</span>';
                         bgClass = isDepartFlightDay ? "bg-orange-50 border-orange-300 font-bold" : "bg-orange-50/50 text-gray-400 border-gray-200 line-through";
                     }
                 } else if (isAlignedReturn) {
                     if (onlySpotReturn) {
-                        // 官網自查回程: 紫色 (Purple)
                         arrowIndicator = '<span class="text-purple-500 font-extrabold text-xs">←</span>';
                         bgClass = isReturnFlightDay ? "bg-purple-50 border-purple-300 font-bold" : "bg-purple-50/50 text-gray-400 border-gray-200 line-through";
                     } else {
-                        // 促銷回程: 黃色 (Yellow)
                         arrowIndicator = '<span class="text-yellow-500 font-extrabold text-xs">←</span>';
                         bgClass = isReturnFlightDay ? "bg-yellow-50 border-yellow-300 font-bold" : "bg-yellow-50/50 text-gray-400 border-gray-200 line-through";
                     }
-                } else if (isFlightDay) {
-                    bgClass = "bg-gray-50 text-gray-800 border-gray-200 hover:bg-gray-100";
-                } else {
-                    bgClass = "bg-white text-gray-400 border-gray-100 opacity-60";
-                }
+                } else if (isFlightDay) { bgClass = "bg-gray-50 text-gray-800 border-gray-200 hover:bg-gray-100"; } 
+                else { bgClass = "bg-white text-gray-400 border-gray-100 opacity-60"; }
 
                 const dayCell = document.createElement('div');
                 dayCell.className = `h-12 p-1.5 border rounded-xl transition-all cursor-pointer flex flex-col justify-between ${bgClass}`;
-                dayCell.setAttribute('data-day-cell', 'true');
-                dayCell.setAttribute('data-day-date', dateString);
-                dayCell.setAttribute('data-day-flight', isFlightDay ? 'true' : 'false');
-                dayCell.setAttribute('data-day-num', day);
+                dayCell.setAttribute('data-day-cell', 'true'); dayCell.setAttribute('data-day-date', dateStr); dayCell.setAttribute('data-day-flight', isFlightDay); dayCell.setAttribute('data-day-num', day);
 
                 let iconsHtml = arrowIndicator;
                 if (arrowIndicator) {
@@ -1280,42 +906,29 @@
                     if (!specificFlightChecked) iconsHtml += '<i class="fa-solid fa-triangle-exclamation text-rose-400 text-[9px] ml-0.5"></i>';
                 }
                 if (isNogo) iconsHtml = '<span class="text-rose-500 text-[8px] font-bold">✖ 無法</span>';
-
                 dayCell.innerHTML = `<span class="text-[10px] font-bold block">${day}</span><div class="flex justify-between items-center text-[10px] h-3">${iconsHtml}</div>`;
                 daysGrid.appendChild(dayCell);
             }
-            wrapper.appendChild(daysGrid);
-            return wrapper;
+            wrapper.appendChild(daysGrid); return wrapper;
         }
 
-        function handleCalendarCellClick(dateString, isFlightDay, dayNum) {
+        function handleCalendarCellClick(dateStr, isFlightDay, dayNum) {
             const filterType = document.getElementById('calendar-type-select').value;
             const hideSpot = document.getElementById('calendar-hide-spot')?.checked;
-            const targetYear = new Date(dateString).getFullYear();
-            const routeSelect = document.getElementById('calendar-route-select');
-            const selectedValue = routeSelect ? (routeSelect.value || "all") : "all";
+            const targetYear = new Date(dateStr).getFullYear();
+            const val = document.getElementById('calendar-route-select')?.value || "all";
             let matchedRecords = [];
 
             records.forEach(r => {
                 if (hideSpot && r.source_type === 'Spot') return;
-                if (filterType !== 'all') {
-                    if (r.source_type === 'Spot') return;
-                    if (r.promo_category !== filterType) return;
-                }
-                if (!isRouteMatchingSelected(r, selectedValue)) return;
+                if (filterType !== 'all') { if (r.source_type === 'Spot') return; if (r.promo_category !== filterType) return; }
+                if (!isRouteMatchingSelected(r, val)) return;
 
-                const alignedDepart = r.depart_date ? getAlignedDate(r.depart_date, targetYear) : null;
-                const alignedReturn = r.return_date ? getAlignedDate(r.return_date, targetYear) : null;
-
-                if (alignedDepart && formatDate(alignedDepart) === dateString) {
-                    matchedRecords.push({ type: 'aligned', direction: '去程', originDate: r.depart_date, data: r });
-                }
-                if (alignedReturn && formatDate(alignedReturn) === dateString) {
-                    matchedRecords.push({ type: 'aligned', direction: '回程', originDate: r.return_date, data: r });
-                }
+                const { alignedDepart, alignedReturn } = getRecordAlignedDates(r, targetYear);
+                if (alignedDepart && formatDate(alignedDepart) === dateStr) matchedRecords.push({ type: 'aligned', direction: '去程', originDate: r.depart_date, data: r });
+                if (alignedReturn && formatDate(alignedReturn) === dateStr) matchedRecords.push({ type: 'aligned', direction: '回程', originDate: r.return_date, data: r });
             });
-
-            showDayDetail(dayNum, new Date(dateString), matchedRecords, isFlightDay);
+            showDayDetail(dayNum, new Date(dateStr), matchedRecords, isFlightDay);
         }
 
         function showDayDetail(day, dateObj, matched, isFlightDay) {
@@ -1326,465 +939,239 @@
             const dateStr = formatDate(dateObj);
             const weekdayName = getWeekdayName(dateStr);
             const isNogo = nogoDays.includes(dateStr);
-            const weekday = dateObj.getDay();
+            const holidayWarning = checkHolidayWarning(dateObj); 
 
-            let html = `
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between border-b pb-2 border-gray-200">
-                        <span class="text-xs font-bold text-gray-800">${dateStr} (${weekdayName})</span>
-                        <div class="flex gap-1.5">
-                            ${isNogo ? `<span class="text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-md font-bold">✖ 無法出國</span>` : ''}
-                            <span class="text-[9px] ${isFlightDay ? 'bg-gray-200 text-gray-700' : 'bg-rose-50 border border-rose-200 text-rose-500'} px-2 py-0.5 rounded-md font-bold">
-                                ${isFlightDay ? '✓ 有飛航排班' : '✗ 本日無飛航'}
-                            </span>
-                        </div>
-                    </div>
-            `;
+            let html = `<div class="space-y-4"><div class="flex flex-wrap items-center justify-between border-b pb-2 border-gray-200 gap-2">
+                <span class="text-xs font-bold text-gray-800">${dateStr} (${weekdayName})</span>
+                <div class="flex gap-1.5">
+                    ${isNogo ? `<span class="text-[9px] bg-rose-500 text-white px-2 py-0.5 rounded-md font-bold">✖ 無法出國</span>` : ''}
+                    <span class="text-[9px] ${isFlightDay ? 'bg-gray-200 text-gray-700' : 'bg-rose-50 border border-rose-200 text-rose-500'} px-2 py-0.5 rounded-md font-bold">
+                        ${isFlightDay ? '✓ 有飛航排班' : '✗ 本日無飛航'}
+                    </span>
+                </div>
+            </div>`;
 
-            if (matched.length === 0) {
-                html += `<p class="text-gray-500 italic text-[11px]">當日並無對齊到您篩選條件下的歷史紀錄。</p>`;
-            } else {
+            if (holidayWarning) {
+                html += `<div class="bg-rose-50 text-rose-600 border border-rose-200 p-2.5 rounded-xl text-[11px] font-bold flex gap-2 shadow-sm">
+                            <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                            <div>⚠️ 注意：此預測日期落在台灣連假區間（${holidayWarning}），航空公司多半不會將連假涵蓋在促銷範圍內，請特別留意。</div>
+                         </div>`;
+            }
+
+            if (matched.length === 0) { html += `<p class="text-gray-500 italic text-[11px]">當日並無對齊到您篩選條件下的歷史紀錄。</p>`; } 
+            else {
                 html += `<div class="space-y-3">`;
                 matched.forEach(item => {
                     const originalWd = getWeekdayName(item.originDate);
-                    
-                    let dirArrow = "→ 去程";
-                    let dirBg = "bg-orange-50 border-orange-200";
-                    let iconColor = "text-orange-500";
+                    let dirArrow = "→ 去程", dirBg = "bg-orange-50 border-orange-200", iconColor = "text-orange-500";
                     let targetAirportCode = item.data.depart_to || item.data.depart_from;
 
                     if (item.direction === '回程') {
-                        dirArrow = "← 回程";
-                        dirBg = "bg-yellow-50 border-yellow-200"; 
-                        iconColor = "text-yellow-600";
+                        dirArrow = "← 回程"; dirBg = "bg-yellow-50 border-yellow-200"; iconColor = "text-yellow-500";
                         targetAirportCode = item.data.return_from || item.data.return_to;
                     }
 
-                    // 官網自查顏色調整為 靛色與紫色
                     if (item.data.source_type === 'Spot') {
-                        if (item.direction === '去程') {
-                            dirBg = "bg-indigo-50 border-indigo-200";
-                            iconColor = "text-indigo-500";
-                        } else {
-                            dirBg = "bg-purple-50 border-purple-200";
-                            iconColor = "text-purple-500";
-                        }
+                        if (item.direction === '去程') { dirBg = "bg-indigo-50 border-indigo-200"; iconColor = "text-indigo-500"; }
+                        else { dirBg = "bg-purple-50 border-purple-200"; iconColor = "text-purple-500"; }
                     }
 
-                    const targetAirportName = getAirportName(targetAirportCode);
-                    const specificRouteFlight = isAirportFlightDay(targetAirportCode, weekday);
+                    const tName = getAirportName(targetAirportCode);
+                    const specificRouteFlight = isAirportFlightDay(targetAirportCode, dateObj.getDay());
 
                     html += `
                         <div class="border border-l-[3px] p-3 rounded-xl ${dirBg} text-[11px] bg-opacity-70 shadow-sm">
                             <div class="font-bold text-gray-800 flex items-center gap-2 flex-wrap">
-                                <i class="fa-solid fa-arrows-spin ${iconColor}"></i> 
-                                [ ${targetAirportName} ] ${dirArrow} 資訊 
-                                ${item.data.source_type === 'Spot' ? '<span class="text-[9px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-gray-600">官網自查</span>' : ''}
+                                <i class="fa-solid fa-arrows-spin ${iconColor}"></i> [ ${tName} ] ${dirArrow} 
+                                ${item.data.source_type === 'Spot' ? '<span class="text-[9px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-indigo-600">官網自查</span>' : ''}
                             </div>
-                            <p class="mt-1.5 text-gray-600">歷史對齊日 <strong>${item.originDate} (${originalWd})</strong>。</p>
-                            ${specificRouteFlight 
-                                ? `<p class="text-[10px] font-bold text-gray-800 mt-1">✓ 參考班表：${targetAirportName}航點當天有航班</p>` 
-                                : `<p class="text-[10px] font-bold text-rose-500 mt-1">⚠️ 歷史對齊有票，但今年該航線在${weekdayName}並無飛航。</p>`
-                            }
-                            <div class="mt-2 text-[10px] text-gray-800 bg-white p-2 rounded-lg font-mono border border-gray-100 shadow-sm">
-                                歷史票價: 去程 NT$${formatPrice(item.data.depart_price)} / 回程 NT$${formatPrice(item.data.return_price)}
-                            </div>
-                        </div>
-                    `;
+                            <p class="mt-1.5 text-gray-600">歷史對齊日 <strong>${item.originDate} (${originalWd})</strong></p>
+                            ${specificRouteFlight ? `<p class="text-[10px] font-bold text-emerald-600 mt-1">✓ 參考班表：${tName}當天有航班</p>` : `<p class="text-[10px] font-bold text-rose-500 mt-1">⚠️ 歷史對齊有票，但今年該航線此日無飛航。</p>`}
+                            <div class="mt-2 text-[10px] text-gray-800 bg-white p-2 rounded-lg font-mono border border-gray-100 shadow-sm">歷史票價: 去程 NT$${formatPrice(item.data.depart_price)} / 回程 NT$${formatPrice(item.data.return_price)}</div>
+                        </div>`;
                 });
                 html += `</div>`;
             }
-            html += `</div>`;
-            detailContent.innerHTML = html;
-
-            document.getElementById('nogo-action-area').innerHTML = `
-                <button id="btn-toggle-nogo" data-date="${dateStr}" class="text-[10px] font-bold px-4 py-2 rounded-xl transition shadow-sm ${
-                    isNogo ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50' : 'bg-rose-500 text-white hover:bg-rose-600'
-                }">
-                    <i class="fa-solid ${isNogo ? 'fa-calendar-check' : 'fa-calendar-xmark'} mr-1"></i>
-                    ${isNogo ? '恢復為可出國日期' : '標記此日無法出國'}
-                </button>
-            `;
+            html += `</div>`; detailContent.innerHTML = html;
+            document.getElementById('nogo-action-area').innerHTML = `<button id="btn-toggle-nogo" data-date="${dateStr}" class="text-[10px] font-bold px-4 py-2 rounded-xl transition shadow-sm ${isNogo ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50' : 'bg-rose-500 text-white hover:bg-rose-600'}"><i class="fa-solid ${isNogo ? 'fa-calendar-check' : 'fa-calendar-xmark'} mr-1"></i>${isNogo ? '恢復為可出國' : '標記無法出國'}</button>`;
         }
 
         async function toggleNogoDay(dateStr) {
-            const index = nogoDays.indexOf(dateStr);
-            if (index > -1) {
-                nogoDays.splice(index, 1);
-                showToast("已成功移除無法出國日期標記");
-            } else {
-                nogoDays.push(dateStr);
-                showToast("已成功將該日標記為無法出國", "info");
-            }
-            await syncData();
-            updateDashboard();
-
-            const tempDate = new Date(dateStr);
-            handleCalendarCellClick(dateStr, getSelectedRouteDays().includes(tempDate.getDay()), tempDate.getDate());
+            const index = nogoDays.indexOf(dateStr); if (index > -1) { nogoDays.splice(index, 1); showToast("已移除無法出國標記"); } else { nogoDays.push(dateStr); showToast("已標記為無法出國", "info"); }
+            await syncData(); updateDashboard(); handleCalendarCellClick(dateStr, getSelectedRouteDays().includes(new Date(dateStr).getDay()), new Date(dateStr).getDate());
         }
 
         function startEditRecord(id) {
-            const r = records.find(item => item.id === id);
-            if (!r) return;
-            editingRecordId = id;
+            const r = records.find(item => item.id === id); if (!r) return; editingRecordId = id;
+            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> 正在編輯紀錄`;
+            document.getElementById('btn-submit-record-text').textContent = "確認修改紀錄"; document.getElementById('btn-cancel-edit-record').classList.remove('hidden');
+
+            document.querySelectorAll('input[name="source_type"]').forEach(radio => radio.checked = (radio.value === r.source_type)); updatePromoCategoryVisibility();
             
-            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-pen-to-square text-orange-500"></i> 正在編輯促銷紀錄`;
-            document.getElementById('btn-submit-record-text').textContent = "確認修改紀錄";
-            document.getElementById('btn-cancel-edit-record').classList.remove('hidden');
-
-            document.querySelectorAll('input[name="source_type"]').forEach(radio => radio.checked = (radio.value === r.source_type));
-            updatePromoCategoryVisibility();
-            initFlatpickr('single'); // 編輯模式一律強制使用單選以免錯誤修改
-
-            document.getElementById('record-depart-from').value = r.depart_from || "";
-            document.getElementById('record-depart-to').value = r.depart_to || "";
-            fpDepart.setDate(r.depart_date || "");
+            document.getElementById('record-depart-from').value = r.depart_from || ""; document.getElementById('record-depart-to').value = r.depart_to || "";
             document.getElementById('record-depart-price').value = r.depart_price !== null ? r.depart_price : "";
-
-            document.getElementById('record-return-from').value = r.return_from || "";
-            document.getElementById('record-return-to').value = r.return_to || "";
-            fpReturn.setDate(r.return_date || "");
+            document.getElementById('record-return-from').value = r.return_from || ""; document.getElementById('record-return-to').value = r.return_to || "";
             document.getElementById('record-return-price').value = r.return_price !== null ? r.return_price : "";
 
-            if (r.promo_category && r.promo_category !== 'none') {
-                document.querySelectorAll('input[name="promo_category"]').forEach(radio => radio.checked = (radio.value === r.promo_category));
-            }
-
-            document.getElementById('record-form').scrollIntoView({ behavior: 'smooth' });
-            showToast("已載入選取紀錄，修改後請點選確認修改！", "info");
+            if (r.promo_category && r.promo_category !== 'none') document.querySelectorAll('input[name="promo_category"]').forEach(radio => radio.checked = (radio.value === r.promo_category));
+            
+            fpDepart.setDate(r.depart_date || ""); fpReturn.setDate(r.return_date || "");
+            document.getElementById('record-form').scrollIntoView({ behavior: 'smooth' }); showToast("已載入，修改後請儲存", "info");
         }
 
         function cancelEditRecord() {
-            editingRecordId = null;
-            document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-plus text-gray-400"></i> 新增促銷 / 查價紀錄`;
-            document.getElementById('btn-submit-record-text').textContent = "儲存紀錄";
-            document.getElementById('btn-cancel-edit-record').classList.add('hidden');
-            document.getElementById('record-form').reset();
-            updatePromoCategoryVisibility();
-            
-            // 復原日期選擇器的原始模式
-            const st = document.querySelector('input[name="source_type"]:checked').value;
-            initFlatpickr(st === 'Spot' ? 'multiple' : 'single');
-            
-            showToast("已取消編輯狀態", "info");
+            editingRecordId = null; document.getElementById('form-title-text').innerHTML = `<i class="fa-solid fa-plus text-gray-400"></i> 新增促銷 / 查價紀錄`;
+            document.getElementById('btn-submit-record-text').textContent = "儲存紀錄"; document.getElementById('btn-cancel-edit-record').classList.add('hidden');
+            document.getElementById('record-form').reset(); updatePromoCategoryVisibility(); showToast("已取消編輯", "info");
         }
 
         async function handleRecordSubmit(e) {
             e.preventDefault();
-            const departFrom = document.getElementById('record-depart-from').value;
-            const departTo = document.getElementById('record-depart-to').value;
-            
-            // 獲取日期的字串並轉為陣列
-            const departDatesStr = document.getElementById('record-depart-date').value;
-            const departDates = departDatesStr ? departDatesStr.split(', ') : [];
+            const departFrom = document.getElementById('record-depart-from').value, departTo = document.getElementById('record-depart-to').value;
             const departPrice = document.getElementById('record-depart-price').value ? parseInt(document.getElementById('record-depart-price').value) : null;
-
-            const returnFrom = document.getElementById('record-return-from').value;
-            const returnTo = document.getElementById('record-return-to').value;
-            
-            const returnDatesStr = document.getElementById('record-return-date').value;
-            const returnDates = returnDatesStr ? returnDatesStr.split(', ') : [];
+            const returnFrom = document.getElementById('record-return-from').value, returnTo = document.getElementById('record-return-to').value;
             const returnPrice = document.getElementById('record-return-price').value ? parseInt(document.getElementById('record-return-price').value) : null;
 
-            const hasDepart = departFrom && departTo && departDates.length > 0;
-            const hasReturn = returnFrom && returnTo && returnDates.length > 0;
+            const departDatesStr = document.getElementById('record-depart-date').value;
+            const returnDatesStr = document.getElementById('record-return-date').value;
+            const departDates = departDatesStr ? departDatesStr.split(', ') : [];
+            const returnDates = returnDatesStr ? returnDatesStr.split(', ') : [];
 
-            if (!hasDepart && !hasReturn) return showToast("請選擇出發地與目的地，並填寫歷史日期！", "error");
+            if (departDates.length === 0 && returnDates.length === 0) return showToast("請至少填寫一個歷史日期！", "error");
 
             const sourceType = document.querySelector('input[name="source_type"]:checked').value;
             const promoCategory = sourceType === 'Spot' ? 'none' : document.querySelector('input[name="promo_category"]:checked').value;
 
-            const baseRecordData = {
-                source_type: sourceType,
-                promo_category: promoCategory
-            };
-
+            // 如果編輯模式，僅更新那一筆 (假設不會突然改成多個日期)
             if (editingRecordId) {
-                // 編輯模式（一律為單筆單日期）
-                const recordData = {
-                    ...baseRecordData,
-                    depart_from: hasDepart ? departFrom : "",
-                    depart_to: hasDepart ? departTo : "",
-                    return_from: hasReturn ? returnFrom : "",
-                    return_to: hasReturn ? returnTo : "",
-                    depart_date: hasDepart ? departDates[0] : null,
-                    return_date: hasReturn ? returnDates[0] : null,
-                    depart_price: hasDepart ? departPrice : null,
-                    return_price: hasReturn ? returnPrice : null
-                };
-                
                 const index = records.findIndex(item => item.id === editingRecordId);
                 if (index > -1) {
-                    records[index] = { ...records[index], ...recordData };
-                    showSuccessModal("紀錄修改成功！");
+                    records[index] = { ...records[index], source_type: sourceType, promo_category: promoCategory,
+                        depart_from: departFrom, depart_to: departTo, depart_price: departPrice, depart_date: departDates[0] || null,
+                        return_from: returnFrom, return_to: returnTo, return_price: returnPrice, return_date: returnDates[0] || null
+                    };
+                    showToast("紀錄修改成功！");
                 }
                 cancelEditRecord();
             } else {
-                if (sourceType === 'Spot' && (departDates.length > 1 || returnDates.length > 1)) {
-                    // 自動將多選日期拆分為多筆獨立紀錄儲存
-                    departDates.forEach(d => {
-                        records.push({
-                            id: 'r_' + Date.now() + Math.floor(Math.random() * 1000),
-                            ...baseRecordData,
-                            depart_from: departFrom, depart_to: departTo, depart_date: d, depart_price: departPrice,
-                            return_from: "", return_to: "", return_date: null, return_price: null
-                        });
-                    });
-                    returnDates.forEach(d => {
-                        records.push({
-                            id: 'r_' + Date.now() + Math.floor(Math.random() * 1000),
-                            ...baseRecordData,
-                            return_from: returnFrom, return_to: returnTo, return_date: d, return_price: returnPrice,
-                            depart_from: "", depart_to: "", depart_date: null, depart_price: null
-                        });
-                    });
-                } else {
-                    // 一般單筆紀錄儲存
-                    records.push({ 
-                        id: 'r_' + Date.now(), 
-                        ...baseRecordData,
-                        depart_from: hasDepart ? departFrom : "",
-                        depart_to: hasDepart ? departTo : "",
-                        return_from: hasReturn ? returnFrom : "",
-                        return_to: hasReturn ? returnTo : "",
-                        depart_date: hasDepart ? departDates[0] : null,
-                        return_date: hasReturn ? returnDates[0] : null,
-                        depart_price: hasDepart ? departPrice : null,
-                        return_price: hasReturn ? returnPrice : null
+                // 新增模式，支援多選日期拆筆
+                const maxDates = Math.max(1, departDates.length, returnDates.length);
+                for (let i = 0; i < maxDates; i++) {
+                    // 若數量不對稱，就用第一個日期補足搭配
+                    const dDate = departDates[i] || (departDates.length ? departDates[0] : null);
+                    const rDate = returnDates[i] || (returnDates.length ? returnDates[0] : null);
+                    
+                    records.push({
+                        id: 'r_' + Date.now() + '_' + i, source_type: sourceType, promo_category: promoCategory,
+                        depart_from: departFrom, depart_to: departTo, depart_price: departPrice, depart_date: dDate,
+                        return_from: returnFrom, return_to: returnTo, return_price: returnPrice, return_date: rDate
                     });
                 }
-                
-                showSuccessModal("儲存成功！");
-                
-                if (fpDepart) fpDepart.clear();
-                if (fpReturn) fpReturn.clear();
-                document.getElementById('record-depart-price').value = '';
-                document.getElementById('record-return-price').value = '';
+                playSuccessAnimation();
+                fpDepart.clear(); fpReturn.clear();
+                document.getElementById('record-depart-price').value = ''; document.getElementById('record-return-price').value = '';
             }
-
-            await syncData();
-            populateRouteDropdowns();
-            updateDashboard();
-            renderRecordsTable();
+            await syncData(); populateRouteDropdowns(); updateDashboard(); renderRecordsTable();
         }
 
         async function deleteRecord(id) {
             showConfirm("刪除紀錄", "確定要刪除這筆促銷紀錄嗎？", async () => {
-                records = records.filter(r => r.id !== id);
-                if (editingRecordId === id) cancelEditRecord();
-                await syncData();
-                populateRouteDropdowns();
-                updateDashboard();
-                renderRecordsTable();
-                showToast("紀錄已刪除。");
+                records = records.filter(r => r.id !== id); if (editingRecordId === id) cancelEditRecord();
+                await syncData(); populateRouteDropdowns(); updateDashboard(); renderRecordsTable(); showToast("紀錄已刪除。");
             });
         }
 
         function toggleAllCollapse() {
-            if (currentGroupMode === 'none') return showToast("不分組模式下，無可摺疊之分組", "info");
-
+            const mode = document.getElementById('record-group-mode').value;
+            if (mode === 'none') return showToast("不分類模式無可摺疊之分組", "info");
             const searchVal = document.getElementById('record-search')?.value.toLowerCase() || "";
             const filtered = records.filter(r => `${r.depart_from} ${r.depart_to} ${r.return_from} ${r.return_to} ${r.promo_category}`.toLowerCase().includes(searchVal));
-
             let groupKeys = new Set();
-            if (currentGroupMode === 'city') {
-                filtered.forEach(r => {
-                    const dest = getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to);
-                    groupKeys.add(dest ? `${getAirportName(dest)} (${dest})` : "其他");
-                });
-            } else if (currentGroupMode === 'category') {
-                filtered.forEach(r => {
-                    if (r.promo_category === 'anniversary') groupKeys.add("九月 週年大促紀錄");
-                    else if (r.promo_category === 'easter') groupKeys.add("三月 復活節促銷紀錄");
-                    else groupKeys.add("未分類 / 官網自查");
-                });
-            }
-
-            const keysArr = Array.from(groupKeys);
-            if (keysArr.length === 0) return;
-
+            if (mode === 'city') filtered.forEach(r => groupKeys.add(getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to) ? `${getAirportName(getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to))} (${getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to)})` : "其他"));
+            else if (mode === 'category') filtered.forEach(r => groupKeys.add(r.promo_category === 'anniversary' ? "週年大促紀錄" : (r.promo_category === 'easter' ? "復活節促銷紀錄" : "未分類 / 官網自查")));
+            const keysArr = Array.from(groupKeys); if (keysArr.length === 0) return;
             const hasExpanded = keysArr.some(k => collapsedGroups[k] !== true);
             keysArr.forEach(k => collapsedGroups[k] = hasExpanded);
-
-            renderRecordsTable();
-            showToast(hasExpanded ? "已一鍵折疊所有分組" : "已一鍵展開所有分組", "info");
+            renderRecordsTable(); showToast(hasExpanded ? "已一鍵摺疊" : "已一鍵展開", "info");
         }
 
         function renderRecordsTable() {
             const container = document.getElementById('records-grouped-container');
+            const mode = document.getElementById('record-group-mode').value;
             const searchVal = document.getElementById('record-search')?.value.toLowerCase() || "";
             
             const btnCollapseAll = document.getElementById('btn-collapse-all');
             const btnCollapseIcon = document.getElementById('btn-collapse-all-icon');
             const btnCollapseText = document.getElementById('btn-collapse-all-text');
             
-            if (currentGroupMode === 'none') {
-                btnCollapseAll.className = "bg-gray-50 text-gray-300 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-[10px] sm:text-xs shadow-sm gap-1 shrink-0 whitespace-nowrap cursor-not-allowed opacity-50";
+            if (mode === 'none') {
+                btnCollapseAll.className = "bg-gray-50 text-gray-300 rounded-xl px-2.5 py-2.5 shrink-0 flex items-center gap-1 cursor-not-allowed opacity-50";
                 btnCollapseIcon.className = "fa-solid fa-compress text-gray-300";
             } else {
-                btnCollapseAll.className = "bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl border border-gray-200 transition duration-200 flex items-center justify-center text-[10px] sm:text-xs shadow-sm gap-1 shrink-0 whitespace-nowrap cursor-pointer";
+                btnCollapseAll.className = "bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl px-2.5 py-2.5 shrink-0 shadow-sm flex items-center gap-1 font-bold text-[10px] cursor-pointer";
             }
 
-            const filtered = records.filter(r => {
-                const departZH = getAirportName(r.depart_from) + getAirportName(r.depart_to);
-                const returnZH = getAirportName(r.return_from) + getAirportName(r.return_to);
-                return `${r.depart_from} ${r.depart_to} ${r.return_from} ${r.return_to} ${r.promo_category} ${departZH} ${returnZH}`.toLowerCase().includes(searchVal);
-            });
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center text-gray-500 text-xs py-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">目前暫無任何促銷觀測紀錄。</div>`;
-                return;
-            }
+            const filtered = records.filter(r => `${r.depart_from} ${r.depart_to} ${r.return_from} ${r.return_to} ${r.promo_category} ${getAirportName(r.depart_from)} ${getAirportName(r.depart_to)}`.toLowerCase().includes(searchVal));
+            if (filtered.length === 0) { container.innerHTML = `<div class="text-center text-gray-500 text-xs py-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">暫無紀錄</div>`; return; }
 
             let groups = {};
-            if (currentGroupMode === 'none') {
-                groups['all'] = { name: "所有促銷紀錄", records: filtered };
-            } else if (currentGroupMode === 'city') {
+            if (mode === 'none') { groups['all'] = { name: "所有促銷紀錄", records: filtered }; } 
+            else if (mode === 'city') {
                 filtered.forEach(r => {
                     const destCode = getDestinationFromRoute(r.depart_to || r.depart_from || r.return_from || r.return_to);
                     const cityName = destCode ? `${getAirportName(destCode)} (${destCode})` : "其他未定義目的地";
-                    if (!groups[cityName]) groups[cityName] = { name: cityName, records: [] };
-                    groups[cityName].records.push(r);
+                    if (!groups[cityName]) groups[cityName] = { name: cityName, records: [] }; groups[cityName].records.push(r);
                 });
-            } else if (currentGroupMode === 'category') {
+            } else if (mode === 'category') {
                 filtered.forEach(r => {
-                    let catName = "未分類 / 官網自查";
-                    if (r.promo_category === 'anniversary') catName = "九月 週年大促紀錄";
-                    else if (r.promo_category === 'easter') catName = "三月 復活節促銷紀錄";
-                    if (!groups[catName]) groups[catName] = { name: catName, records: [] };
-                    groups[catName].records.push(r);
+                    const catName = r.promo_category === 'anniversary' ? "週年大促紀錄" : (r.promo_category === 'easter' ? "復活節促銷紀錄" : "未分類 / 官網自查");
+                    if (!groups[catName]) groups[catName] = { name: catName, records: [] }; groups[catName].records.push(r);
                 });
             }
 
-            if (currentGroupMode !== 'none') {
+            if (mode !== 'none') {
                 const hasExpanded = Object.keys(groups).some(k => collapsedGroups[k] !== true);
-                btnCollapseAll.title = hasExpanded ? "摺疊" : "展開";
-                btnCollapseIcon.className = hasExpanded ? "fa-solid fa-compress text-gray-700" : "fa-solid fa-expand text-gray-700";
-                if(btnCollapseText) btnCollapseText.textContent = hasExpanded ? "摺疊" : "展開";
-            } else {
-                if(btnCollapseText) btnCollapseText.textContent = "摺疊";
+                btnCollapseText.textContent = hasExpanded ? "摺疊" : "展開";
+                btnCollapseIcon.className = hasExpanded ? "fa-solid fa-compress" : "fa-solid fa-expand";
             }
 
             container.innerHTML = "";
             Object.keys(groups).forEach(groupKey => {
-                const group = groups[groupKey];
-                const isCollapsed = collapsedGroups[groupKey] === true; 
-                
-                const groupDiv = document.createElement('div');
-                groupDiv.className = "border border-gray-200 rounded-2xl overflow-hidden bg-white minimal-shadow transition-all duration-300";
-
+                const group = groups[groupKey]; const isCollapsed = collapsedGroups[groupKey] === true; 
+                const groupDiv = document.createElement('div'); groupDiv.className = "border border-gray-200 rounded-2xl overflow-hidden bg-white minimal-shadow";
                 groupDiv.innerHTML = `
-                    <div class="bg-gray-50 px-5 py-3.5 flex items-center justify-between cursor-pointer select-none hover:bg-gray-100 transition border-b border-gray-200" data-toggle-group="${groupKey}">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid ${currentGroupMode === 'city' ? 'fa-map-location-dot text-gray-500' : currentGroupMode === 'category' ? 'fa-tags text-gray-500' : 'fa-folder-open text-gray-500'} text-xs"></i>
-                            <span class="font-bold text-xs text-gray-800">${group.name}</span>
-                            <span class="text-[9px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-bold font-mono">${group.records.length} 筆</span>
-                        </div>
-                        <div class="text-gray-400 text-[10px] flex items-center gap-1.5 font-bold">
-                            <span>${isCollapsed ? '展開' : '收合'}</span>
-                            <i class="fa-solid ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'} text-xs"></i>
-                        </div>
+                    <div class="bg-gray-50 px-5 py-3.5 flex items-center justify-between cursor-pointer hover:bg-gray-100 border-b border-gray-200" data-toggle-group="${groupKey}">
+                        <div class="flex items-center gap-2"><span class="font-bold text-xs text-gray-800">${group.name}</span><span class="text-[9px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md font-mono">${group.records.length} 筆</span></div>
+                        <div class="text-gray-400 text-[10px] font-bold"><i class="fa-solid ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}"></i></div>
                     </div>
                 `;
-
                 if (!isCollapsed) {
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = "p-4 space-y-4";
-
-                    let rowsHtml = "";
-                    let mobileCardsHtml = "";
-
+                    const contentDiv = document.createElement('div'); contentDiv.className = "p-4 space-y-4";
+                    let rowsHtml = "", mobileCardsHtml = "";
                     group.records.forEach(r => {
-                        let promoBadge = '';
-                        let mPromoBadge = '';
-                        if (r.promo_category === 'anniversary') {
-                            promoBadge = '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-200">週年大促</span>';
-                            mPromoBadge = '<span class="bg-gray-100 text-gray-800 px-1.5 py-0.5 rounded text-[9px] font-bold border border-gray-200">週年大促</span>';
-                        } else if (r.promo_category === 'easter') {
-                            promoBadge = '<span class="bg-gray-50 text-gray-600 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-200">復活節</span>';
-                            mPromoBadge = '<span class="bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-gray-200">復活節</span>';
-                        } else {
-                            promoBadge = '<span class="bg-gray-50 text-gray-600 px-2 py-1 rounded-md text-[9px] font-bold border border-gray-200">一般查價</span>';
-                            mPromoBadge = '<span class="bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded text-[9px] font-bold border border-gray-200">一般查價</span>';
-                        }
+                        let promoBadge = r.promo_category === 'anniversary' ? '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-[9px] font-bold">週年大促</span>' : (r.promo_category === 'easter' ? '<span class="bg-gray-50 text-gray-600 px-2 py-1 rounded text-[9px] font-bold">復活節</span>' : '<span class="bg-gray-50 text-gray-500 px-2 py-1 rounded text-[9px] font-bold">一般查價</span>');
+                        const sourceBadge = r.source_type === 'PTT' ? '<span class="text-[9px] text-orange-500 border border-orange-200 px-1.5 py-0.5 rounded bg-white font-bold">PTT</span>' : '<span class="text-[9px] text-indigo-500 border border-indigo-200 px-1.5 py-0.5 rounded bg-white font-bold">官網</span>';
+                        const dInfo = r.depart_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.depart_date}</div>` : `<span class="text-gray-400 text-[10px]">無</span>`;
+                        const rInfo = r.return_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.return_date}</div>` : `<span class="text-gray-400 text-[10px]">無</span>`;
+                        const isEd = editingRecordId === r.id;
 
-                        const sourceBadge = r.source_type === 'PTT' 
-                            ? '<span class="text-[9px] text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded-md bg-white font-bold">PTT</span>' 
-                            : '<span class="text-[9px] text-indigo-600 border border-indigo-200 px-1.5 py-0.5 rounded-md bg-white font-bold">官網</span>';
-                        
-                        const mSourceBadge = r.source_type === 'PTT'
-                            ? '<span class="text-[8px] text-gray-500 border border-gray-200 px-1 rounded bg-white font-bold">PTT</span>'
-                            : '<span class="text-[8px] text-indigo-600 border border-indigo-200 px-1 rounded bg-white font-bold">自查</span>';
+                        rowsHtml += `<tr class="border-b border-gray-50 ${isEd ? 'bg-amber-50/30' : ''}">
+                            <td class="p-3"><div class="flex flex-col gap-1.5 items-start">${promoBadge}${sourceBadge}</div></td>
+                            <td class="p-3">${dInfo}</td><td class="p-3">${rInfo}</td>
+                            <td class="p-3"><div class="font-mono text-[10px] text-gray-800 font-semibold mb-1">去: NT$${formatPrice(r.depart_price)}</div><div class="font-mono text-[10px] text-gray-800 font-semibold">回: NT$${formatPrice(r.return_price)}</div></td>
+                            <td class="p-3 text-center"><button data-edit-record="${r.id}" class="text-gray-400 hover:text-gray-800 p-1"><i class="fa-solid fa-pen-to-square"></i></button><button data-delete-record="${r.id}" class="text-gray-400 hover:text-rose-500 p-1"><i class="fa-solid fa-trash-can"></i></button></td>
+                        </tr>`;
 
-                        const departInfo = r.depart_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.depart_from)} → ${getAirportName(r.depart_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>${r.depart_date}</div>` : `<span class="text-gray-400 italic text-[10px]">無資訊</span>`;
-                        const returnInfo = r.return_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.return_from)} → ${getAirportName(r.return_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5"><i class="fa-regular fa-calendar text-gray-400 mr-1"></i>${r.return_date}</div>` : `<span class="text-gray-400 italic text-[10px]">無資訊</span>`;
-
-                        const isEditingThis = editingRecordId === r.id;
-
-                        // 動態決定側邊與字體顏色 (PTT: 橙黃, Spot: 靛紫)
-                        let departColorClass = r.source_type === 'PTT' ? 'text-orange-500' : 'text-indigo-500';
-                        let returnColorClass = r.source_type === 'PTT' ? 'text-yellow-600' : 'text-purple-600';
-                        let rowEditingClass = r.source_type === 'PTT' ? 'bg-orange-50/30 border-l-4 border-l-orange-400' : 'bg-indigo-50/30 border-l-4 border-l-indigo-400';
-                        let cardEditingClass = r.source_type === 'PTT' ? 'bg-orange-50/20 border-2 border-orange-300' : 'bg-indigo-50/20 border-2 border-indigo-300';
-                        let depBorderClass = r.source_type === 'PTT' ? 'border-orange-300' : 'border-indigo-300';
-                        let retBorderClass = r.source_type === 'PTT' ? 'border-yellow-400' : 'border-purple-300';
-                        
-                        rowsHtml += `
-                            <tr class="hover:bg-gray-50/50 transition border-b border-gray-50 ${isEditingThis ? rowEditingClass : ''}">
-                                <td class="p-3"><div class="flex flex-col gap-1.5 items-start">${promoBadge}${sourceBadge}</div></td>
-                                <td class="p-3">${departInfo}</td>
-                                <td class="p-3">${returnInfo}</td>
-                                <td class="p-3">
-                                    <div class="font-mono text-[10px] text-gray-800 font-semibold mb-1"><span class="${departColorClass}">去:</span> NT$${formatPrice(r.depart_price)}</div>
-                                    <div class="font-mono text-[10px] text-gray-800 font-semibold"><span class="${returnColorClass}">回:</span> NT$${formatPrice(r.return_price)}</div>
-                                </td>
-                                <td class="p-3 text-center">
-                                    <button data-edit-record="${r.id}" class="${isEditingThis ? departColorClass : 'text-gray-400'} hover:text-gray-800 p-1.5 rounded" title="編輯這筆紀錄"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button data-delete-record="${r.id}" class="text-gray-400 hover:text-rose-500 p-1.5 rounded" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                        `;
-
-                        mobileCardsHtml += `
-                            <div class="bg-white border rounded-xl p-4 space-y-3 shadow-sm border-gray-200 ${isEditingThis ? cardEditingClass : ''}">
-                                <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
-                                    <div class="flex items-center gap-1.5">${mPromoBadge}${mSourceBadge}${isEditingThis ? '<span class="bg-gray-100 text-gray-700 text-[8px] px-1.5 rounded-md font-bold border border-gray-200">編輯中</span>' : ''}</div>
-                                    <div class="flex items-center gap-1 bg-gray-50 px-1 py-0.5 rounded-lg border border-gray-100">
-                                        <button data-edit-record="${r.id}" class="text-gray-500 hover:text-gray-800 p-1.5 rounded"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button>
-                                        <button data-delete-record="${r.id}" class="text-gray-500 hover:text-rose-500 p-1.5 rounded"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4 pb-1">
-                                    <div class="border-l-2 ${depBorderClass} pl-2">
-                                        <span class="text-[8px] text-gray-500 block uppercase font-semibold mb-1">去程</span>
-                                        ${r.depart_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.depart_to)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.depart_date}</div>` : `<div class="text-gray-400 italic text-[10px]">無</div>`}
-                                    </div>
-                                    <div class="border-l-2 ${retBorderClass} pl-2">
-                                        <span class="text-[8px] text-gray-500 block uppercase font-semibold mb-1">回程</span>
-                                        ${r.return_date ? `<div class="font-bold text-gray-800 text-[11px]">${getAirportName(r.return_from)}</div><div class="text-gray-500 font-mono text-[9px] mt-0.5">${r.return_date}</div>` : `<div class="text-gray-400 italic text-[10px]">無</div>`}
-                                    </div>
-                                </div>
-                                <div class="bg-gray-50 p-2.5 rounded-lg flex justify-between items-center text-[10px] border border-gray-100">
-                                    <span class="text-gray-500 font-semibold">未稅票價參考</span>
-                                    <div class="font-mono font-bold text-gray-800">去: <span class="${departColorClass}">NT$${formatPrice(r.depart_price)}</span> / 回: <span class="${returnColorClass}">NT$${formatPrice(r.return_price)}</span></div>
-                                </div>
+                        mobileCardsHtml += `<div class="bg-white border rounded-xl p-4 space-y-3 border-gray-200 ${isEd ? 'bg-amber-50/20 border-amber-300' : ''}">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
+                                <div class="flex gap-1.5">${promoBadge}${sourceBadge}</div>
+                                <div class="flex gap-1"><button data-edit-record="${r.id}" class="text-gray-500 p-1.5"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button><button data-delete-record="${r.id}" class="text-gray-500 p-1.5"><i class="fa-solid fa-trash-can text-[10px]"></i></button></div>
                             </div>
-                        `;
+                            <div class="grid grid-cols-2 gap-4"><div class="pl-2 border-l-2 border-orange-300">${dInfo}</div><div class="pl-2 border-l-2 border-yellow-300">${rInfo}</div></div>
+                            <div class="bg-gray-50 p-2 rounded flex justify-between text-[10px]"><span>未稅價</span><span class="font-mono font-bold">去: NT$${formatPrice(r.depart_price)} / 回: NT$${formatPrice(r.return_price)}</span></div>
+                        </div>`;
                     });
-
-                    contentDiv.innerHTML = `
-                        <div class="hidden md:block overflow-x-auto">
-                            <table class="w-full text-xs text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-gray-50 text-gray-500 border-b border-gray-200 font-semibold text-[10px]">
-                                        <th class="p-3 w-[110px] rounded-tl-xl">性質</th><th class="p-3">去程航線</th><th class="p-3">回程航線</th><th class="p-3 w-[130px]">未稅票價</th><th class="p-3 text-center w-[80px] rounded-tr-xl">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">${rowsHtml}</tbody>
-                            </table>
-                        </div>
-                        <div class="block md:hidden space-y-4">${mobileCardsHtml}</div>
-                    `;
+                    contentDiv.innerHTML = `<div class="hidden md:block overflow-x-auto"><table class="w-full text-xs text-left"><thead><tr class="bg-gray-50 text-gray-500 border-b border-gray-200 text-[10px]"><th class="p-3">性質</th><th class="p-3">去程</th><th class="p-3">回程</th><th class="p-3">未稅票價</th><th class="p-3 text-center">操作</th></tr></thead><tbody class="divide-y divide-gray-100">${rowsHtml}</tbody></table></div><div class="block md:hidden space-y-4">${mobileCardsHtml}</div>`;
                     groupDiv.appendChild(contentDiv);
                 }
                 container.appendChild(groupDiv);
@@ -1792,180 +1179,39 @@
         }
 
         async function handleScheduleSubmit(e) {
-            e.preventDefault();
-            const route = document.getElementById('sched-route').value.toUpperCase().trim();
-            const fromZh = document.getElementById('sched-from-zh').value.trim();
-            const toZh = document.getElementById('sched-to-zh').value.trim();
+            e.preventDefault(); const route = document.getElementById('sched-route').value.toUpperCase().trim(), fromZh = document.getElementById('sched-from-zh').value.trim(), toZh = document.getElementById('sched-to-zh').value.trim();
             const checkedDays = Array.from(document.querySelectorAll('input[name="sched_days"]:checked')).map(cb => parseInt(cb.value));
-
-            if (checkedDays.length === 0) return showToast("請至少點選一個營運星期！", "error");
-
-            const parts = route.split('-');
-            if (parts.length === 2) {
-                if (fromZh) airportZh[parts[0]] = fromZh;
-                if (toZh) airportZh[parts[1]] = toZh;
-            }
-
-            if (editingRoute) {
-                const idx = schedules.findIndex(s => s.route === editingRoute);
-                if (idx !== -1) { schedules[idx].route = route; schedules[idx].days = checkedDays; }
-                editingRoute = null;
-                showToast(`${route} 營運班表已更新！`);
-            } else {
-                const idx = schedules.findIndex(s => s.route === route);
-                if (idx !== -1) schedules[idx].days = checkedDays;
-                else schedules.push({ route, days: checkedDays });
-                showToast(`${route} 營運班表已設定！`);
-            }
-
-            await syncData();
-            resetScheduleForm();
-            populateRouteDropdowns();
-            updateDashboard();
-            renderSchedulesList();
+            if (checkedDays.length === 0) return showToast("請點選營運星期", "error");
+            const parts = route.split('-'); if (parts.length === 2) { if (fromZh) airportZh[parts[0]] = fromZh; if (toZh) airportZh[parts[1]] = toZh; }
+            if (editingRoute) { const idx = schedules.findIndex(s => s.route === editingRoute); if (idx !== -1) { schedules[idx].route = route; schedules[idx].days = checkedDays; } editingRoute = null; showToast("班表更新！"); } 
+            else { const idx = schedules.findIndex(s => s.route === route); if (idx !== -1) schedules[idx].days = checkedDays; else schedules.push({ route, days: checkedDays }); showToast("班表設定！"); }
+            await syncData(); resetScheduleForm(); populateRouteDropdowns(); updateDashboard(); renderSchedulesList();
         }
-
-        function startEditSchedule(route) {
-            editingRoute = route;
-            const sched = schedules.find(s => s.route === route);
-            if (!sched) return;
-
-            document.getElementById('sched-route').value = sched.route;
-            document.getElementById('sched-route').setAttribute('readonly', 'true');
-            document.getElementById('sched-route').classList.add('bg-gray-100', 'text-gray-400');
-
-            const parts = route.split('-');
-            if (parts.length === 2) {
-                document.getElementById('sched-from-zh').value = airportZh[parts[0]] || "";
-                document.getElementById('sched-to-zh').value = airportZh[parts[1]] || "";
-            }
-
-            document.querySelectorAll('input[name="sched_days"]').forEach(cb => cb.checked = sched.days.includes(parseInt(cb.value)));
-            document.getElementById('btn-submit-schedule').innerHTML = '<i class="fa-solid fa-floppy-disk mr-1"></i> 確認修改';
-            document.getElementById('btn-cancel-edit-sched').classList.remove('hidden');
-            document.getElementById('schedule-form').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function startCreateScheduleForAirport(airportCode) {
-            editingRoute = null;
-            resetScheduleForm();
-            document.getElementById('sched-route').value = `TPE-${airportCode}`;
-            document.getElementById('sched-from-zh').value = "台北桃園";
-            document.getElementById('sched-to-zh').value = airportZh[airportCode] || "";
-            document.querySelectorAll('input[name="sched_days"]').forEach(cb => cb.checked = false);
-            document.getElementById('btn-submit-schedule').innerHTML = '<i class="fa-solid fa-plus-circle mr-1"></i> 設定 / 啟用';
-            document.getElementById('btn-cancel-edit-sched').classList.remove('hidden');
-            document.getElementById('schedule-form').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function cancelEditSchedule() {
-            editingRoute = null;
-            resetScheduleForm();
-        }
-
-        function resetScheduleForm() {
-            document.getElementById('schedule-form').reset();
-            document.getElementById('sched-route').removeAttribute('readonly');
-            document.getElementById('sched-route').classList.remove('bg-gray-100', 'text-gray-400');
-            document.getElementById('btn-submit-schedule').innerHTML = '<i class="fa-solid fa-plus-circle mr-1"></i> 設定 / 更新';
-            document.getElementById('btn-cancel-edit-sched').classList.add('hidden');
-        }
-
-        async function deleteSchedule(route) {
-            showConfirm("刪除航班班表", `確定要清除 ${route} 的班表設定嗎？`, async () => {
-                schedules = schedules.filter(s => s.route !== route);
-                await syncData();
-                populateRouteDropdowns();
-                updateDashboard();
-                renderSchedulesList();
-                showToast("班表設定已清除。");
-            });
-        }
+        function startEditSchedule(route) { editingRoute = route; const sched = schedules.find(s => s.route === route); if (!sched) return; document.getElementById('sched-route').value = sched.route; document.getElementById('sched-route').setAttribute('readonly', 'true'); const parts = route.split('-'); if (parts.length===2) { document.getElementById('sched-from-zh').value=airportZh[parts[0]]||""; document.getElementById('sched-to-zh').value=airportZh[parts[1]]||""; } document.querySelectorAll('input[name="sched_days"]').forEach(cb=>cb.checked=sched.days.includes(parseInt(cb.value))); document.getElementById('btn-submit-schedule').textContent='確認'; document.getElementById('btn-cancel-edit-sched').classList.remove('hidden'); document.getElementById('schedule-form').scrollIntoView(); }
+        function startCreateScheduleForAirport(ac) { editingRoute=null; resetScheduleForm(); document.getElementById('sched-route').value=`TPE-${ac}`; document.getElementById('sched-from-zh').value="台北桃園"; document.getElementById('sched-to-zh').value=airportZh[ac]||""; document.getElementById('btn-cancel-edit-sched').classList.remove('hidden'); document.getElementById('schedule-form').scrollIntoView(); }
+        function cancelEditSchedule() { editingRoute = null; resetScheduleForm(); }
+        function resetScheduleForm() { document.getElementById('schedule-form').reset(); document.getElementById('sched-route').removeAttribute('readonly'); document.getElementById('btn-submit-schedule').textContent='設定'; document.getElementById('btn-cancel-edit-sched').classList.add('hidden'); }
+        async function deleteSchedule(route) { showConfirm("刪除", `清除 ${route} 班表？`, async () => { schedules = schedules.filter(s => s.route !== route); await syncData(); populateRouteDropdowns(); updateDashboard(); renderSchedulesList(); showToast("已清除。"); }); }
 
         function renderSchedulesList() {
-            const container = document.getElementById('schedules-list-container');
-            container.innerHTML = "";
-
+            const container = document.getElementById('schedules-list-container'); container.innerHTML = "";
             for (const [regKey, region] of Object.entries(regions)) {
-                const groupWrapper = document.createElement('div');
-                groupWrapper.className = "space-y-3";
-                groupWrapper.innerHTML = `<div class="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl flex items-center gap-2"><i class="fa-solid fa-map-location-dot text-gray-400"></i> <span>${region.name}</span></div>`;
-
-                const cardsGrid = document.createElement('div');
-                cardsGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
-
-                region.airports.forEach(airportCode => {
-                    const matchedSched = schedules.find(s => getDestinationFromRoute(s.route) === airportCode);
-                    const card = document.createElement('div');
-                    
-                    if (matchedSched) {
-                        card.className = "bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm text-xs minimal-shadow";
-                        let daysHtml = "";
-                        [1, 2, 3, 4, 5, 6, 0].forEach(dayIndex => {
-                            const isActive = matchedSched.days.includes(dayIndex);
-                            daysHtml += `<span class="w-[22px] h-[22px] inline-flex items-center justify-center text-[9px] font-bold rounded-md ${isActive ? 'bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-400'}">${weekDaysChinese[dayIndex]}</span>`;
-                        });
-                        card.innerHTML = `
-                            <div class="space-y-2.5 flex-grow pr-2">
-                                <div class="font-bold text-gray-800 flex items-center gap-1.5 flex-wrap">
-                                    <i class="fa-solid fa-plane text-gray-400 text-[10px]"></i> <span>${getAirportName(airportCode)} (${matchedSched.route})</span>
-                                </div>
-                                <div class="flex gap-1.5">${daysHtml}</div>
-                            </div>
-                            <div class="flex items-center gap-1 shrink-0 bg-gray-50 rounded-lg p-0.5 border border-gray-100">
-                                <button data-edit-schedule="${matchedSched.route}" class="text-gray-500 hover:text-gray-800 p-2 rounded-md transition" title="編輯"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button data-delete-schedule="${matchedSched.route}" class="text-gray-500 hover:text-rose-500 p-2 rounded-md transition" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        `;
+                const groupWrapper = document.createElement('div'); groupWrapper.className = "space-y-3";
+                groupWrapper.innerHTML = `<div class="text-xs font-bold text-gray-700 bg-gray-50 px-4 py-2.5 rounded-xl"><i class="fa-solid fa-map-location-dot"></i> ${region.name}</div>`;
+                const cardsGrid = document.createElement('div'); cardsGrid.className = "grid grid-cols-1 md:grid-cols-3 gap-4";
+                region.airports.forEach(ac => {
+                    const sched = schedules.find(s => getDestinationFromRoute(s.route) === ac); const card = document.createElement('div');
+                    if (sched) {
+                        card.className = "bg-white border rounded-xl p-4 flex justify-between shadow-sm text-xs minimal-shadow";
+                        let dHtml = ""; [1,2,3,4,5,6,0].forEach(d => dHtml += `<span class="w-[22px] h-[22px] inline-flex items-center justify-center text-[9px] font-bold rounded-md ${sched.days.includes(d)?'bg-gray-800 text-white':'bg-gray-100 text-gray-400'}">${weekDaysChinese[d]}</span>`);
+                        card.innerHTML = `<div class="space-y-2.5"><div class="font-bold text-gray-800">${getAirportName(ac)} (${sched.route})</div><div class="flex gap-1.5">${dHtml}</div></div><div class="flex gap-1"><button data-edit-schedule="${sched.route}" class="text-gray-400 hover:text-gray-800 p-2"><i class="fa-solid fa-pen-to-square"></i></button></div>`;
                     } else {
-                        card.className = "bg-gray-50/50 border border-gray-200 border-dashed rounded-xl p-4 flex items-center justify-between text-xs";
-                        card.innerHTML = `
-                            <div class="space-y-1.5">
-                                <div class="font-bold text-gray-500 flex items-center gap-1.5 flex-wrap"><i class="fa-solid fa-plane-slash text-gray-300 text-[10px]"></i> <span>${getAirportName(airportCode)} (${airportCode})</span></div>
-                                <div class="text-[10px] text-gray-400 italic">未啟用 (請點擊設定)</div>
-                            </div>
-                            <button data-create-schedule="${airportCode}" class="bg-white border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold px-3 py-2 rounded-lg text-[10px] flex items-center gap-1 shrink-0 shadow-sm transition"><i class="fa-solid fa-plus-circle"></i> 設定</button>
-                        `;
+                        card.className = "bg-gray-50/50 border border-dashed rounded-xl p-4 flex justify-between text-xs";
+                        card.innerHTML = `<div class="space-y-1.5"><div class="font-bold text-gray-500">${getAirportName(ac)}</div><div class="text-[10px] text-gray-400">未啟用</div></div><button data-create-schedule="${ac}" class="bg-white border px-3 py-2 rounded-lg shadow-sm">設定</button>`;
                     }
                     cardsGrid.appendChild(card);
                 });
-                groupWrapper.appendChild(cardsGrid);
-                container.appendChild(groupWrapper);
-            }
-
-            const definedAirports = new Set();
-            Object.values(regions).forEach(r => r.airports.forEach(a => definedAirports.add(a)));
-            const otherSchedules = schedules.filter(s => !definedAirports.has(getDestinationFromRoute(s.route)));
-
-            if (otherSchedules.length > 0) {
-                const groupWrapper = document.createElement('div');
-                groupWrapper.className = "space-y-3";
-                groupWrapper.innerHTML = `<div class="text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 px-4 py-2.5 rounded-xl flex items-center gap-2"><i class="fa-solid fa-globe text-gray-400"></i> <span>其他自訂地區</span></div>`;
-                const cardsGrid = document.createElement('div');
-                cardsGrid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4";
-
-                otherSchedules.forEach(s => {
-                    const card = document.createElement('div');
-                    card.className = "bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between shadow-sm text-xs minimal-shadow";
-                    let daysHtml = "";
-                    [1, 2, 3, 4, 5, 6, 0].forEach(dayIndex => {
-                        const isActive = s.days.includes(dayIndex);
-                        daysHtml += `<span class="w-[22px] h-[22px] inline-flex items-center justify-center text-[9px] font-bold rounded-md ${isActive ? 'bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-400'}">${weekDaysChinese[dayIndex]}</span>`;
-                    });
-                    card.innerHTML = `
-                        <div class="space-y-2.5 flex-grow pr-2">
-                            <div class="font-bold text-gray-800 flex items-center gap-1.5 flex-wrap"><i class="fa-solid fa-plane text-gray-400 text-[10px]"></i> <span>${getRouteDisplayName(s.route)} (${s.route})</span></div>
-                            <div class="flex gap-1.5">${daysHtml}</div>
-                        </div>
-                        <div class="flex items-center gap-1 shrink-0 bg-gray-50 rounded-lg p-0.5 border border-gray-100">
-                            <button data-edit-schedule="${s.route}" class="text-gray-500 hover:text-gray-800 p-2 rounded-md transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button data-delete-schedule="${s.route}" class="text-gray-500 hover:text-rose-500 p-2 rounded-md transition"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    `;
-                    cardsGrid.appendChild(card);
-                });
-                groupWrapper.appendChild(cardsGrid);
-                container.appendChild(groupWrapper);
+                groupWrapper.appendChild(cardsGrid); container.appendChild(groupWrapper);
             }
         }
     </script>
